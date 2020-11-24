@@ -1,29 +1,4 @@
-/**
- *Submitted for verification at Etherscan.io on 2020-01-31
-*/
-
-/**
-*
-*   ,d8888b                                                    
-*   88P'                                                       
-*d888888P                                                      
-*  ?88'     d8888b   88bd88b .d888b, d888b8b   d888b8b   d8888b
-*  88P     d8P' ?88  88P'  ` ?8b,   d8P' ?88  d8P' ?88  d8b_,dP
-* d88      88b  d88 d88        `?8b 88b  ,88b 88b  ,88b 88b    
-*d88'      `?8888P'd88'     `?888P' `?88P'`88b`?88P'`88b`?888P'
-*                                                    )88       
-*                                                   ,88P       
-*                                               `?8888P        
-*
-* 
-* SmartWay Forsage
-* https://forsage.smartway.run
-* (only for SmartWay.run members)
-* 
-**/
-
-
-pragma solidity >=0.4.23 <0.6.0;
+pragma solidity 0.5.10;
 
 contract SmartMatrixForsage {
 
