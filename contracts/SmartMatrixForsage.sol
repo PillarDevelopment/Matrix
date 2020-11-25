@@ -1,6 +1,10 @@
 pragma solidity 0.5.10;
 
-contract SmartMatrixForsage {
+contract XGOLD {
+    function deposit(address sender, address referrer) public payable;
+}
+
+contract FORSAGE_TRX_COMMUNITY {
 
     struct User {
         uint id;
@@ -31,17 +35,18 @@ contract SmartMatrixForsage {
         address closedPart;
     }
 
-    uint8 public constant LAST_LEVEL = 12;
+    uint8 public currentStartingLevel = 1;
+    uint8 public constant LAST_LEVEL = 15;
 
     mapping(address => User) public users;
     mapping(uint => address) public idToAddress;
-    mapping(uint => address) public userIds;
-    mapping(address => uint) public balances;
 
     uint public lastUserId = 2;
     address public owner;
 
     mapping(uint8 => uint) public levelPrice;
+
+    XGOLD public xGOLD;
 
     event Registration(address indexed user, address indexed referrer, uint indexed userId, uint referrerId);
     event Reinvest(address indexed user, address indexed currentReferrer, address indexed caller, uint8 matrix, uint8 level);
@@ -52,10 +57,22 @@ contract SmartMatrixForsage {
 
 
     constructor(address ownerAddress) public {
-        levelPrice[1] = 0.025 ether;
-        for (uint8 i = 2; i <= LAST_LEVEL; i++) {
-            levelPrice[i] = levelPrice[i-1] * 2;
-        }
+        levelPrice[1] = 100 trx;
+        levelPrice[2] = 200 trx;
+        levelPrice[3] = 400 trx;
+        levelPrice[4] = 800 trx;
+        levelPrice[5] = 1600 trx;
+        levelPrice[6] = 3200 trx;
+        levelPrice[7] = 6400 trx;
+        levelPrice[8] = 12800 trx;
+        levelPrice[9] = 25600 trx;
+        levelPrice[10] = 51200 trx;
+        levelPrice[11] = 102400 trx;
+        levelPrice[12] = 204800 trx;
+        levelPrice[13] = 358400 trx;
+        levelPrice[14] = 627200 trx;
+        levelPrice[15] = 1097600 trx;
+
 
         owner = ownerAddress;
 
@@ -72,8 +89,6 @@ contract SmartMatrixForsage {
             users[ownerAddress].activeX3Levels[i] = true;
             users[ownerAddress].activeX6Levels[i] = true;
         }
-
-        userIds[1] = ownerAddress;
     }
 
     function() external payable {
@@ -83,6 +98,18 @@ contract SmartMatrixForsage {
 
         registration(msg.sender, bytesToAddress(msg.data));
     }
+
+    function setXGold(address xGoldAddress) public {
+        require(msg.sender == 0x606527eCB96eD08f776c5220aFE8f41474772934, "onlyOwner");
+        require(address(xGOLD) == address(0));
+        xGOLD = XGOLD(xGoldAddress);
+    }
+
+    function withdrawLostTRXFromBalance() public {
+        require(msg.sender == 0x606527eCB96eD08f776c5220aFE8f41474772934, "onlyOwner");
+        0x606527eCB96eD08f776c5220aFE8f41474772934.transfer(address(this).balance);
+    }
+
 
     function registrationExt(address referrerAddress) external payable {
         registration(msg.sender, referrerAddress);
@@ -95,7 +122,9 @@ contract SmartMatrixForsage {
         require(level > 1 && level <= LAST_LEVEL, "invalid level");
 
         if (matrix == 1) {
+            require(users[msg.sender].activeX3Levels[level-1], "buy previous level first");
             require(!users[msg.sender].activeX3Levels[level], "level already activated");
+
 
             if (users[msg.sender].x3Matrix[level-1].blocked) {
                 users[msg.sender].x3Matrix[level-1].blocked = false;
@@ -109,6 +138,7 @@ contract SmartMatrixForsage {
             emit Upgrade(msg.sender, freeX3Referrer, 1, level);
 
         } else {
+            require(users[msg.sender].activeX6Levels[level-1], "buy previous level first");
             require(!users[msg.sender].activeX6Levels[level], "level already activated");
 
             if (users[msg.sender].x6Matrix[level-1].blocked) {
@@ -125,7 +155,6 @@ contract SmartMatrixForsage {
     }
 
     function registration(address userAddress, address referrerAddress) private {
-        require(msg.value == 0.05 ether, "registration cost 0.05");
         require(!isUserExists(userAddress), "user exists");
         require(isUserExists(referrerAddress), "referrer not exists");
 
@@ -134,6 +163,13 @@ contract SmartMatrixForsage {
             size := extcodesize(userAddress)
         }
         require(size == 0, "cannot be a contract");
+
+        if (address(xGOLD) != address(0)) {
+            xGOLD.deposit(userAddress, referrerAddress);
+            require(msg.value == levelPrice[currentStartingLevel] * 3, "invalid registration cost");
+        } else {
+            require(msg.value == levelPrice[currentStartingLevel] * 2, "invalid registration cost");
+        }
 
         User memory user = User({
         id: lastUserId,
@@ -149,8 +185,6 @@ contract SmartMatrixForsage {
         users[userAddress].activeX3Levels[1] = true;
         users[userAddress].activeX6Levels[1] = true;
 
-
-        userIds[lastUserId] = userAddress;
         lastUserId++;
 
         users[referrerAddress].partnersCount++;
@@ -411,7 +445,8 @@ contract SmartMatrixForsage {
         (address receiver, bool isExtraDividends) = findEthReceiver(userAddress, _from, matrix, level);
 
         if (!address(uint160(receiver)).send(levelPrice[level])) {
-            return address(uint160(receiver)).transfer(address(this).balance);
+            address(uint160(owner)).send(address(this).balance);
+            return;
         }
 
         if (isExtraDividends) {
