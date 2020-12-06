@@ -1,0 +1,33 @@
+{
+  "name": "some-contract",
+  "version": "1.0.0",
+  "description": "Implementation is a prize drawing system",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npx truffle test",
+    "testWithGanache": "ganache-cli -q -p 7545 & npx truffle test",
+    "coverage": "npx truffle run coverage",
+    "lint": "solhint contracts/**/*.sol",
+    "build": "truffle compile",
+    "simulateOnMainnet": "truffle migrate --network simulating"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "truffle-hdwallet-provider": "^1.0.17"
+  },
+  "devDependencies": {
+    "ethlint": "^1.2.5",
+    "eth-gas-reporter": "^0.2.17",
+    "ganache-cli": "^6.10.2",
+    "mocha-junit-reporter": "^2.0.0",
+    "solhint": "^3.2.0",
+    "solidity-coverage": "^0.7.10",
+    "truffle": "^5.1.44"
+  }
+}
