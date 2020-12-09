@@ -49,22 +49,22 @@ contract Matrix is IMatrix, AccessControl {
 
     mapping(address => User) public users;
 
-    mapping(uint256 => mapping(MatixType => MatrixEntity[])) matrix;
-
-    mapping(uint256 => mapping(MatixType => uint8)) matrixCount;
-
     mapping(uint256 => address) public idToAddress;
 
-    uint256 public userCount;
+    mapping(uint256 => mapping(MatixType => mapping (uint256 => MatrixEntity))) matrix;
+
+    uint256 public lastUserId = 0;
 
     mapping(uint8 => uint256) public matrixEntryCost;
+
+    uint256 public defaultUserId;
 
 
     //
     // Events
     //
 
-    event RegisterSuccessful(address indexed newUserAddress, uint256 indexed newUserId, MatixType indexed matrix, uint256 timestamp);
+    event RegisterSuccessful(address indexed newUserAddress, uint256 indexed newUserId, address indexed referrerAddress, uint256 referrerId, uint256 timestamp);
 
     event Reinvest(address indexed user, address indexed currentReferrer, address indexed caller, uint8 matrix, uint8 level);
 
@@ -78,7 +78,7 @@ contract Matrix is IMatrix, AccessControl {
     // External methods
     //
 
-    constructor(address rootUser) {
+    constructor(address rootUser) public {
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(MANAGER_ROLE, msg.sender);
 
@@ -88,46 +88,83 @@ contract Matrix is IMatrix, AccessControl {
         matrixEntryCost[uint8(MatixType.THIRD)] = 50;
         matrixEntryCost[uint8(MatixType.FOURTH)] = 100;
 
-
         // init default user
-        uint256 defaultUserId = _createUser(rootUser, 0);
+        defaultUserId = _createUser(rootUser, 0);
 
+        _createMatrix(defaultUserId, MatixType.FIRST, 0);
     }
 
-    function register(uint256 _referrerId) external payable override returns(uint) {
-        return _register(msg.sender, _referrerId);
+    function register(address _referrerAddress) external payable returns(uint) {
+        return _register(msg.sender, _referrerAddress);
     }
 
-    function registerOther(address _userAddress, uint256 _referrerId) external payable override returns(uint) {
-        return _register(_userAddress, _referrerId);
-    }
-
-    function createMatrixFirst(MatixType _matrixType) external override returns(uint) {
-        // TODO
+    receive() external payable {
+        if (msg.data.length == 0) {
+            _register(msg.sender, idToAddress[defaultUserId]);
+        } else {
+            _register(msg.sender, _bytesToAddress(msg.data));
+        }
     }
 
     //
     // Internal methods
     //
 
-    function _register(address _userAddress, uint256 _referrerId) internal returns(uint256) {
-        // TODO
+    function _register(address _userAddress, address _referrerAddress) internal returns(uint256) {
+        require(msg.value == matrixEntryCost[0], "Matrix: invalid sending value");
+
+        require(!_isUserExists(_userAddress), "Matrix: user exists");
+        require(_isUserExists(_referrerAddress), "Matrix: referrer not exists");
+        
+        uint256 referrerId = users[_referrerAddress].id;
+        uint256 newUserId = _createUser(_userAddress, referrerId);
+        
+        uint256 lastParentMatrix;
+        _createMatrix(newUserId, MatixType.FIRST, referrerId);
+
+        
+        emit RegisterSuccessful(_userAddress, newUserId, _referrerAddress, referrerId, block.timestamp);
     }
 
-    function _createMatrix(uint256 userId, MatixType _matrixType) internal returns(uint256) {
-        // TODO
+    function _createMatrix(uint256 _userId, MatixType _matrixType, uint256 _parentUserId) internal returns(uint256) {
+        UserNode memory userNode = UserNode({
+            userId: _userId,
+            children: new UserNode[](0)
+        });
+
+        MatrixEntity memory newMatrix = MatrixEntity({
+            matrixType: _matrixType,
+            parentUserId: _parentUserId,
+            parentMatrixNumber: 0,
+            closed: false,
+            root: userNode
+        });
+
+        if (_parentUserId != 0) {
+            uint256 patentMatrixNumber = _getLastMatrixIndex(_parentUserId, _matrixType);
+            newMatrix.parentMatrixNumber = patentMatrixNumber;
+            // matrix[_parentUserId][_matrixType][patentMatrixNumber].root.children.push(userNode);
+        }
+
+        // matrix[_userId][_matrixType].push(newMatrix);
+        // return matrix[_userId][_matrixType].length - 1;
     }
 
     function _createUser(address _userAddress, uint256 _referrerId) internal returns(uint256) {
+        // solhint-disable-next-line no-inline-assembly
+        uint256 codeSize;
+        assembly { codeSize := extcodesize(_userAddress) }
+        require(codeSize == 0, "Matrix: cannot be a contract");
+
+        lastUserId = lastUserId.add(1);
         User memory user = User({
-            id: userCount,
+            id: lastUserId,
             referrerId: _referrerId,
-            referralsCount: uint256(0)
+            referralsCount: uint256(0),
+            matrixCount: 0
         });
         users[_userAddress] = user;
-        idToAddress[userCount] = _userAddress;
-
-        userCount.add(1);
+        idToAddress[lastUserId] = _userAddress;
     }
 
     function _numberToMatrixPosition(uint256 _userNumber, MatixType _matrixType) internal view returns(uint256[] memory) {
@@ -137,4 +174,27 @@ contract Matrix is IMatrix, AccessControl {
         result = FILLING_RULE_MATRIX_1[_userNumber.sub(1)];
         return result;
     }
+
+    function _getLastMatrixIndex(uint256 _userNumber, MatixType _matrixType) internal view returns(uint256) {
+        return users[idToAddress[_userNumber]].matrixCount - 1;
+    }
+
+    function _isUserExists(address user) internal view returns (bool) {
+        return (users[user].id != 0);
+    }
+
+    function _bytesToAddress(bytes memory data) internal pure returns (address addr) {
+        assembly {
+            addr := mload(add(data, 20))
+        }
+    }
+
+    // function sendETHDividends(address userAddress, address _from, uint8 matr, uint8 level) private {
+    //     (address receiver, bool isExtraDividends) = findEthReceiver(userAddress, _from, matr, level);
+
+    //     if (!address(uint160(receiver)).send(levelPrice[level])) {
+    //         return address(uint160(receiver)).transfer(address(this).balance);
+    //     }
+    
+    // }
 }

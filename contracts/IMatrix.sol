@@ -8,26 +8,26 @@ interface IMatrix {
 
     enum MatixType {FIRST, SECOND, THIRD, FOURTH}
 
-    struct userNode {
+    struct UserNode {
         uint256 userId;
-        userNode[] children;
+        UserNode[] children;
     }
 
     struct MatrixEntity {
         MatixType matrixType;
-        uint8 parentUserId;
-        uint8 parentMatrixNumber;
+        uint256 parentUserId;
+        uint256 parentMatrixNumber;
         bool closed;
-        userNode root;
+        UserNode root;
     }
 
     struct User {
-        uint id;
-        uint referrerId;
-        uint referralsCount;
+        uint256 id;
+        uint256 referrerId;
+        uint256 referralsCount;
+        uint256 matrixCount;
     }
 
-    function register(uint256 _referrerId) external payable returns(uint);
-    function registerOther(address _userAddress, uint256 _referrerId) external payable returns(uint);
-    function createMatrixFirst(MatixType _matrixType) external returns(uint);
+    // function register(address _referrerAddress) external payable returns(uint);
+    // function createMatrix(MatixType _matrixType) external returns(uint);
 }
