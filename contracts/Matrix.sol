@@ -17,7 +17,7 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IMatrix.sol";
-
+import "./IPriceController";
 
 contract Matrix is IMatrix, Ownable {
 
@@ -33,11 +33,11 @@ contract Matrix is IMatrix, Ownable {
 
     uint256 public lastMatrixId = 0;
     mapping(uint256 => MatrixPosition) public matrix;
-    
+
     uint256 public matrixEntryCost = 50;
     uint256 public rootUserId;
 
-
+    IPriceController public priceController;
     //
     // Events
     //
@@ -73,11 +73,11 @@ contract Matrix is IMatrix, Ownable {
     // External methods
     //
 
-    constructor(address rootUser) public {
+    constructor(address rootUser, address _priceController) public {
 
         // init default user
         rootUserId = _createUser(rootUser, address(0));
-
+        priceController = IPriceController(_priceController);
         _createMatrix(rootUser, address(0));
     }
 
@@ -102,8 +102,8 @@ contract Matrix is IMatrix, Ownable {
     //
 
     function _register(address _userAddress, address _referrerAddress) internal returns(uint256) {
-        require(msg.value == matrixEntryCost, "Matrix: invalid sending value");
-        
+        require(msg.value == matrixEntryCost.mul(priceController.getCurrentUsdRate()), "Matrix: invalid sending value");
+
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
         uint256 newMatrixId = _createMatrix(_userAddress, _referrerAddress);
