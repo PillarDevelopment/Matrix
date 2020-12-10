@@ -2,105 +2,96 @@
 
 /**
  *
- * ooo        ooooo               .             o8o              
- * `88.       .888'             .o8             `"'              
- * 888b     d'888   .oooo.   .o888oo oooo d8b oooo  oooo    ooo 
- * 8 Y88. .P  888  `P  )88b    888   `888""8P `888   `88b..8P'  
- * 8  `888'   888   .oP"888    888    888      888     Y888'    
- * 8    Y     888  d8(  888    888 .  888      888   .o8"'88b   
- * o8o        o888o `Y888""8o   "888" d888b    o888o o88'   888o 
- *
+ * ooo        ooooo               .             o8o                      .o  
+ * `88.       .888'             .o8             `"'                    o888  
+ *  888b     d'888   .oooo.   .o888oo oooo d8b oooo  oooo    ooo        888  
+ *  8 Y88. .P  888  `P  )88b    888   `888""8P `888   `88b..8P'         888  
+ *  8  `888'   888   .oP"888    888    888      888     Y888'           888  
+ *  8    Y     888  d8(  888    888 .  888      888   .o8"'88b          888  
+ * o8o        o888o `Y888""8o   "888" d888b    o888o o88'   888o       o888o 
  *
  **/
 
-pragma solidity ^0.7.1;
-pragma experimental ABIEncoderV2;
-// pragma experimental SMTChecker;
-// pragma abicoder v2;
+pragma solidity ^0.5.12;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IMatrix.sol";
 
 
-contract Matrix is IMatrix, AccessControl {
+contract Matrix is IMatrix, Ownable {
 
     using SafeMath for uint256;
-
-    //
-    // User positioning information within tree
-    //
-
-    uint[][] private FILLING_RULE_MATRIX_1 = [[1],[2],[3]];
-    uint[][] private FILLING_RULE_MATRIX_2 = [[1, 0],[2, 0],[1, 1],[1, 2],[2, 1],[2, 2]];
-    uint[][] private FILLING_RULE_MATRIX_3;
-    uint[][] private FILLING_RULE_MATRIX_4;
-
-    //
-    // Manager roles
-    //
-
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
-    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     //
     // Storage
     //
 
+    uint256 public lastUserId = 0;
     mapping(address => User) public users;
-
     mapping(uint256 => address) public idToAddress;
 
-    mapping(uint256 => mapping(MatixType => mapping (uint256 => MatrixEntity))) matrix;
-
-    uint256 public lastUserId = 0;
-
-    mapping(uint8 => uint256) public matrixEntryCost;
-
-    uint256 public defaultUserId;
+    uint256 public lastMatrixId = 0;
+    mapping(uint256 => MatrixPosition) public matrix;
+    
+    uint256 public matrixEntryCost = 50;
+    uint256 public rootUserId;
 
 
     //
     // Events
     //
 
-    event RegisterSuccessful(address indexed newUserAddress, uint256 indexed newUserId, address indexed referrerAddress, uint256 referrerId, uint256 timestamp);
-
+    event RegisterSuccessful(
+        address indexed newUserAddress,
+        uint256 indexed newUserId,
+        address indexed referrerAddress,
+        uint256 referrerId,
+        uint256 newMatrixId,
+        uint256 sendingValue,
+        uint256 timestamp
+    );
+    event UserCreated(
+        address indexed newUserAddress,
+        address indexed referrerAddress,
+        uint256 indexed newUserId,
+        uint256 timestamp
+    );
+    event MatrixCreated(
+        uint256 indexed matrixId,
+        uint256 indexed parentMatrixId,
+        address indexed userAddress
+    );
     event Reinvest(address indexed user, address indexed currentReferrer, address indexed caller, uint8 matrix, uint8 level);
 
     event TransferError(address payable indexed recipient, uint256 indexed value);
     event TransferSuccess(address payable indexed recipient, uint256 indexed value);
 
-    event MatrixEntryCostChanged(uint256 indexed newCost, uint256 indexed oldCost);
-    event OwnerChanged(address payable indexed newOwnerAddress, address payable indexed oldOwnerAddress);
+    event MatrixEntryCostChanged(uint256 indexed newCost, uint256 indexed oldCost, uint256 timestamp);
 
     //
     // External methods
     //
 
     constructor(address rootUser) public {
-        _setupRole(OWNER_ROLE, msg.sender);
-        _setupRole(MANAGER_ROLE, msg.sender);
-
-        // setting the cost of entering the system
-        matrixEntryCost[uint8(MatixType.FIRST)] = 50;
-        matrixEntryCost[uint8(MatixType.SECOND)] = 50;
-        matrixEntryCost[uint8(MatixType.THIRD)] = 50;
-        matrixEntryCost[uint8(MatixType.FOURTH)] = 100;
 
         // init default user
-        defaultUserId = _createUser(rootUser, 0);
+        rootUserId = _createUser(rootUser, address(0));
 
-        _createMatrix(defaultUserId, MatixType.FIRST, 0);
+        _createMatrix(rootUser, address(0));
     }
 
     function register(address _referrerAddress) external payable returns(uint) {
         return _register(msg.sender, _referrerAddress);
     }
 
-    receive() external payable {
+    function changeEntryCost(uint256 _newCost) external onlyOwner returns(uint) {
+        return _changeEntryCost(_newCost);
+    }
+
+    function() external payable {
         if (msg.data.length == 0) {
-            _register(msg.sender, idToAddress[defaultUserId]);
+            _register(msg.sender, idToAddress[rootUserId]);
         } else {
             _register(msg.sender, _bytesToAddress(msg.data));
         }
@@ -111,81 +102,108 @@ contract Matrix is IMatrix, AccessControl {
     //
 
     function _register(address _userAddress, address _referrerAddress) internal returns(uint256) {
-        require(msg.value == matrixEntryCost[0], "Matrix: invalid sending value");
+        require(msg.value == matrixEntryCost, "Matrix: invalid sending value");
+        
+        uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
+        uint256 newMatrixId = _createMatrix(_userAddress, _referrerAddress);
+
+        emit RegisterSuccessful(_userAddress, newUserId, _referrerAddress, users[_referrerAddress].id, newMatrixId, msg.value, block.timestamp);
+
+        return newUserId;
+    }
+
+    function _changeEntryCost(uint256 _newCost) internal onlyOwner returns(uint256) {
+        uint256 oldCost = matrixEntryCost;
+        matrixEntryCost = _newCost;
+
+        emit MatrixEntryCostChanged(_newCost, oldCost, block.timestamp);
+
+        return _newCost;
+    }
+
+    function _createUser(address _userAddress, address _referrerAddress) internal returns(uint256) {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
-        require(_isUserExists(_referrerAddress), "Matrix: referrer not exists");
-        
-        uint256 referrerId = users[_referrerAddress].id;
-        uint256 newUserId = _createUser(_userAddress, referrerId);
-        
-        uint256 lastParentMatrix;
-        _createMatrix(newUserId, MatixType.FIRST, referrerId);
+        require(_isUserExists(_referrerAddress) || users[_userAddress].id == rootUserId, "Matrix: referrer not exists");
 
-        
-        emit RegisterSuccessful(_userAddress, newUserId, _referrerAddress, referrerId, block.timestamp);
-    }
-
-    function _createMatrix(uint256 _userId, MatixType _matrixType, uint256 _parentUserId) internal returns(uint256) {
-        UserNode memory userNode = UserNode({
-            userId: _userId,
-            children: new UserNode[](0)
-        });
-
-        MatrixEntity memory newMatrix = MatrixEntity({
-            matrixType: _matrixType,
-            parentUserId: _parentUserId,
-            parentMatrixNumber: 0,
-            closed: false,
-            root: userNode
-        });
-
-        if (_parentUserId != 0) {
-            uint256 patentMatrixNumber = _getLastMatrixIndex(_parentUserId, _matrixType);
-            newMatrix.parentMatrixNumber = patentMatrixNumber;
-            // matrix[_parentUserId][_matrixType][patentMatrixNumber].root.children.push(userNode);
-        }
-
-        // matrix[_userId][_matrixType].push(newMatrix);
-        // return matrix[_userId][_matrixType].length - 1;
-    }
-
-    function _createUser(address _userAddress, uint256 _referrerId) internal returns(uint256) {
+        // the referrer cannot be contract.
         // solhint-disable-next-line no-inline-assembly
         uint256 codeSize;
         assembly { codeSize := extcodesize(_userAddress) }
         require(codeSize == 0, "Matrix: cannot be a contract");
 
+        // create user
         lastUserId = lastUserId.add(1);
-        User memory user = User({
+        users[_userAddress] = User({
             id: lastUserId,
-            referrerId: _referrerId,
+            referrerAddress: _referrerAddress,
             referralsCount: uint256(0),
-            matrixCount: 0
+            matrixIds: new uint256[](0)
         });
-        users[_userAddress] = user;
         idToAddress[lastUserId] = _userAddress;
+
+        // update upline user
+        users[_referrerAddress].referralsCount = users[_referrerAddress].referralsCount.add(1);
+
+        emit UserCreated(_userAddress, _referrerAddress, lastUserId, block.timestamp);
+
+        return lastUserId;
     }
 
-    function _numberToMatrixPosition(uint256 _userNumber, MatixType _matrixType) internal view returns(uint256[] memory) {
-        require(_userNumber > 0, "Matrix: invalid _userNumber value");
+    function _createMatrix(address _userAddress, address _parentAddress) internal returns(uint256) {
+        
+        // create matrix position
+        lastMatrixId = lastMatrixId.add(1);
+        matrix[lastMatrixId] = MatrixPosition({
+            parentMatrixId: uint(0),
+            userAddress: _userAddress,
+            closed: false,
+            childMatrixIds: new uint256[](0)
+        });
+        users[_userAddress].matrixIds.push(lastMatrixId);
+        
+        // add a binding to the upline
+        if (users[_userAddress].id != rootUserId) {
+            uint256 parentLastMatrixId = _getLastMatrixId(_parentAddress);
 
-        uint256[] memory result = new uint256[](1);
-        result = FILLING_RULE_MATRIX_1[_userNumber.sub(1)];
-        return result;
+            // <-- TODO closed matrix check
+
+            matrix[lastMatrixId].parentMatrixId = parentLastMatrixId;
+            matrix[parentLastMatrixId].childMatrixIds.push(lastMatrixId);
+        }
+
+        emit MatrixCreated(lastMatrixId, matrix[lastMatrixId].parentMatrixId, _userAddress);
+
+        return lastMatrixId; 
     }
 
-    function _getLastMatrixIndex(uint256 _userNumber, MatixType _matrixType) internal view returns(uint256) {
-        return users[idToAddress[_userNumber]].matrixCount - 1;
+    // function _numberToMatrixPosition(uint256 _userNumber, MatixType _matrixType) internal view returns(uint256[] memory) {
+    //     require(_userNumber > 0, "Matrix: invalid _userNumber value");
+
+    //     uint256[] memory result = new uint256[](1);
+    //     result = FILLING_RULE_MATRIX_1[_userNumber.sub(1)];
+    //     return result;
+    // }
+
+    // function _getLastMatrixIndex(uint256 _userNumber) internal view returns(uint256) {
+    //     return users[idToAddress[_userNumber]].matrixCount - 1;
+    // }
+
+    function _isUserExists(address _user) internal view returns (bool) {
+        return (users[_user].id != 0);
     }
 
-    function _isUserExists(address user) internal view returns (bool) {
-        return (users[user].id != 0);
+    function _getLastMatrixId(address _userAddress) internal view returns(uint256) {
+        uint256 matrixArrayLength = users[_userAddress].matrixIds.length;
+        if (matrixArrayLength == 0) {
+            revert("Matrix: array index error in _getLastMatrix(...)");
+        }
+        return matrixArrayLength;
     }
 
-    function _bytesToAddress(bytes memory data) internal pure returns (address addr) {
+    function _bytesToAddress(bytes memory _data) internal pure returns (address addr) {
         assembly {
-            addr := mload(add(data, 20))
+            addr := mload(add(_data, 20))
         }
     }
 

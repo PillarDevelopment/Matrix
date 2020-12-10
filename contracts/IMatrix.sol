@@ -1,33 +1,24 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.1;
-pragma experimental ABIEncoderV2;
-// pragma experimental SMTChecker;
+pragma solidity ^0.5.12;
 
 interface IMatrix {
 
-    enum MatixType {FIRST, SECOND, THIRD, FOURTH}
-
-    struct UserNode {
-        uint256 userId;
-        UserNode[] children;
-    }
-
-    struct MatrixEntity {
-        MatixType matrixType;
-        uint256 parentUserId;
-        uint256 parentMatrixNumber;
+    struct MatrixPosition {
+        uint256 parentMatrixId;
+        address userAddress;
         bool closed;
-        UserNode root;
+        uint256[] childMatrixIds;
     }
 
     struct User {
         uint256 id;
-        uint256 referrerId;
+        address referrerAddress;
         uint256 referralsCount;
-        uint256 matrixCount;
+        uint256[] matrixIds;
     }
 
-    // function register(address _referrerAddress) external payable returns(uint);
-    // function createMatrix(MatixType _matrixType) external returns(uint);
+    function register(address _referrerAddress) external payable returns(uint256);
+
+    function changeEntryCost(uint256 _newCost) external returns(uint256);
 }
