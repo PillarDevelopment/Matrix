@@ -97,12 +97,16 @@ contract Matrix is IMatrix, Ownable {
         }
     }
 
+    function getCostSunPrice() public view returns(uint256) {
+        return matrixEntryCost.mul(priceController.getCurrentUsdRate());
+    }
+
     //
     // Internal methods
     //
 
     function _register(address _userAddress, address _referrerAddress) internal returns(uint256) {
-        require(msg.value == matrixEntryCost.mul(priceController.getCurrentUsdRate()), "Matrix: invalid sending value");
+        require(msg.value == getCostSunPrice(), "Matrix: invalid sending value");
 
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
