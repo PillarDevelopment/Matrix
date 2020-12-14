@@ -18,7 +18,7 @@ interface IMatrix {
         uint256[] matrixIds;
     }
 
-    function register(address _referrerAddress) external payable returns(uint256);
+    function register(address payable _referrerAddress) external payable returns(uint256);
 
     function changeEntryCost(uint256 _newCost) external returns(uint256);
 }

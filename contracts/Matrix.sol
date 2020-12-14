@@ -81,21 +81,23 @@ contract Matrix is IMatrix, Ownable {
         _createMatrix(rootUser, address(0));
     }
 
-    function register(address _referrerAddress) external payable returns(uint) {
-        return _register(msg.sender, _referrerAddress);
+    function register(address payable _referrerAddress) external payable returns(uint) {
+        trcToken _id = msg.tokenid;
+        uint256 _amount = msg.tokenvalue;
+        return _register(msg.sender, _referrerAddress, _id, _amount);
     }
 
     function changeEntryCost(uint256 _newCost) external onlyOwner returns(uint) {
         return _changeEntryCost(_newCost);
     }
 
-    function() external payable {
-        if (msg.data.length == 0) {
-            _register(msg.sender, idToAddress[rootUserId]);
-        } else {
-            _register(msg.sender, _bytesToAddress(msg.data));
-        }
-    }
+    //function() external payable {
+    //   if (msg.data.length == 0) {
+    //       _register(msg.sender, idToAddress[rootUserId], msg.tokenid, msg.tokenvalue);
+    //   } else {
+    //       _register(msg.sender, _bytesToAddress(msg.data), msg.tokenid, msg.tokenvalue);
+    //   }
+    //   }
 
     function getCostSunPrice() public view returns(uint256) {
         return matrixEntryCost.mul(priceController.getCurrentUsdRate());
@@ -105,9 +107,9 @@ contract Matrix is IMatrix, Ownable {
     // Internal methods
     //
 
-    function _register(address _userAddress, address _referrerAddress) internal returns(uint256) {
-        require(msg.tokenid == priceController.getTokenID(), "Matrix: invalid ProgramToken ID");
-        require(msg.tokenvalue == getCostSunPrice(), "Matrix: invalid sending value");
+    function _register(address _userAddress, address payable _referrerAddress, trcToken _id, uint256 _amount) internal returns(uint256) {
+        require(_id == priceController.getTokenID(), "Matrix: invalid ProgramToken ID");
+        require(_amount == getCostSunPrice(), "Matrix: invalid sending value");
 
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
@@ -115,7 +117,7 @@ contract Matrix is IMatrix, Ownable {
 
         emit RegisterSuccessful(_userAddress, newUserId, _referrerAddress, users[_referrerAddress].id, newMatrixId, msg.value, block.timestamp);
 
-        _referrerAddress.transferToken(tokenValue.mul(90).div(100), msg.tokenid); // todo
+        _referrerAddress.transferToken(_amount.mul(90).div(100), _id); // todo
         return newUserId;
     }
 
