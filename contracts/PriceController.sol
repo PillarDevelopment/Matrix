@@ -88,13 +88,16 @@ contract PriceController is Ownable{
 
     uint256 private currentUsdRate;
 
+    trcToken private tokenID;
+
     modifier onlyPriceProvider() {
         require(msg.sender == priceProvider, "PriceProvider: caller is not the priceProvider");
         _;
     }
 
-    constructor() public {
+    constructor(/**uint256 _programID*/) public {
         priceProvider = msg.sender;
+        tokenID = 1000495; // todo only testNet Shasta
     }
 
     function setPriceProvider(address _newPriceProvider) public onlyOwner {
@@ -105,9 +108,14 @@ contract PriceController is Ownable{
         currentUsdRate = _newRate;
     }
 
-
+    // How Trx in 1 USD
     function getCurrentUsdRate() public view returns(uint256) {
         return currentUsdRate;
+    }
+
+
+    function getTokenID() public view returns(trcToken) {
+        return tokenID;
     }
 
 }
