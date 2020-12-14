@@ -17,7 +17,7 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IMatrix.sol";
-import "./IPriceController";
+import "./IPriceController.sol";
 
 contract Matrix is IMatrix, Ownable {
 
@@ -130,7 +130,7 @@ contract Matrix is IMatrix, Ownable {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
         require(_isUserExists(_referrerAddress) || users[_userAddress].id == rootUserId, "Matrix: referrer not exists");
 
-        // the referrer cannot be contract.
+        // the referrer cannot be contract
         // solhint-disable-next-line no-inline-assembly
         uint256 codeSize;
         assembly { codeSize := extcodesize(_userAddress) }
