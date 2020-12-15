@@ -1,0 +1,16 @@
+
+body {
+    color: #d3d3d3;
+    font: 12pt arial;
+    background-color: #191a1d;
+    padding: 0px;
+    margin: 0px;
+}
+
+#matrixNetwork {
+    width: 68vw;
+    height: 80vh;
+    border: 1px solid #444444;
+    background-color: #0b0c0c;
+}
+    
