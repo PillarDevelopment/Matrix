@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.5.12;
 
 interface IMatrix {
@@ -21,4 +19,9 @@ interface IMatrix {
     function register(address _referrerAddress) external payable returns(uint256);
 
     function changeEntryCost(uint256 _newCost) external returns(uint256);
+
+    function getUser(address _userAddress) external view returns(uint256, address, uint256, uint256[] memory);
+
+    function getMatrix(uint256 _matrixId) external view returns(uint256, address payable, bool, uint256[] memory);
+
 }
