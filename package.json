@@ -1,7 +1,7 @@
 {
-  "name": "some-contract",
+  "name": "matrix-contract",
   "version": "1.0.0",
-  "description": "Implementation is a prize drawing system",
+  "description": "Implementation of the matrix mlm",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
@@ -11,8 +11,7 @@
     "testWithGanache": "ganache-cli -q -p 7545 & npx truffle test",
     "coverage": "npx truffle run coverage",
     "lint": "solhint contracts/**/*.sol",
-    "build": "truffle compile",
-    "simulateOnMainnet": "truffle migrate --network simulating"
+    "build": "truffle compile"
   },
   "author": "",
   "license": "",

@@ -6,7 +6,7 @@ interface IMatrix {
 
     struct MatrixPosition {
         uint256 parentMatrixId;
-        address userAddress;
+        address payable userAddress;
         bool closed;
         uint256[] childMatrixIds;
     }
