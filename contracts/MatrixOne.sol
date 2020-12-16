@@ -42,20 +42,29 @@ contract MatrixOne is MatrixCore {
     }
 
 
-    function _makeRewards(address payable _upline) internal {
+    function _makeRewards(uint256 _newMatrixIndex) internal {
         uint256 uplineReward = msg.value.mul(9).div(10);
         uint256 leaderPoolReward = msg.value.sub(uplineReward);
 
         // reward upline
-        _nonBlockingTransfer(_upline, uplineReward);
+        address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
+        _nonBlockingTransfer(upline, uplineReward);
 
         // reward leader pool
         _rewardLeaders(leaderPoolReward);
 
-        emit MakedRewards(_upline, block.timestamp);
+        emit MakedRewards(upline, block.timestamp);
     }
 
-    function _isFilledMatrix(uint256 _matrixId) internal view returns(bool) {
-        return (matrix[_matrixId].childMatrixIds.length >= matrixReferralsLimit);
+    function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
+        return matrix[matrix[_localRootMatrix].parentMatrixId].childMatrixIds.length.sub(1);
+    }
+
+    function _getSubtreeHeight() internal pure returns(uint256) {
+        return 1;
+    }
+
+    function _getRefferalsLimit() internal pure returns(uint256) {
+        return 3;
     }
 }

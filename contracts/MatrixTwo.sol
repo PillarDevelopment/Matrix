@@ -14,15 +14,9 @@ pragma solidity ^0.5.12;
 
 import "./core/MatrixCore.sol";
 
-contract MatrixOne is MatrixCore {
+contract MatrixTwo is MatrixCore {
 
     using SafeMath for uint256;
-
-    //
-    // Constants
-    //
-
-    uint256 public constant matrixReferralsLimit = 3;
 
     //
     // Constructor
@@ -31,19 +25,58 @@ contract MatrixOne is MatrixCore {
     constructor(address payable _rootUser, address _priceController) MatrixCore(_rootUser, _priceController) public {}
 
     //
+    // Private methods
+    //
+
+    function _search(uint256 id, uint256 depth) public view returns(uint256) {
+    
+        if (matrix[id].childMatrixIds.length >= 1) {
+            if (depth < _getSubtreeHeight() - 1) {
+                uint256 newId = _search(matrix[id].childMatrixIds[0], depth + 1);
+                if (newId != 0) return newId;
+            }
+        }
+        
+        if (matrix[id].childMatrixIds.length >= 2) {
+            if (depth < _getSubtreeHeight() - 1) {
+                uint256 newId = _search(matrix[id].childMatrixIds[1], depth + 1);
+                if (newId != 0) return newId;
+            } else return 0;
+        }
+        
+        return id;
+    }
+
+    //
     // Hooks implementations
     //
 
-    function _getParentMatrixId(address _userAddress) internal view returns(uint256) {
-        // TODO <--
+    function _makeRewards(uint256 _newMatrixIndex) internal {
+        // TODO release after testing
+        uint256 uplineReward = msg.value.mul(9).div(10);
+        uint256 leaderPoolReward = msg.value.sub(uplineReward);
+
+        // reward upline
+        address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
+        _nonBlockingTransfer(upline, uplineReward);
+
+        // reward leader pool
+        _rewardLeaders(leaderPoolReward);
+
+        emit MakedRewards(upline, block.timestamp);
+
     }
 
-
-    function _makeRewards(address payable _upline) internal {
-        // TODO <--
+    function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
+        return _search(_localRootMatrix, 0);
     }
 
-    function _isFilledMatrix(uint256 _matrixId) internal view returns(bool) {
-        // TODO <--
+    function _getSubtreeHeight() internal pure returns(uint256) {
+        return 2;
     }
+
+    function _getRefferalsLimit() internal pure returns(uint256) {
+        return 6;
+    }
+
 }

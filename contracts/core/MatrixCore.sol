@@ -16,7 +16,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     uint256 public lastUserId = 0;
     mapping(address => User) internal users;
-    mapping(uint256 => address) public idToAddress;
+    mapping(uint256 => address payable) public idToAddress;
 
     uint256 public matrixCount = 1;
     mapping(uint256 => MatrixPosition) internal matrix;
@@ -111,11 +111,18 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         );
     }
 
-    function getMatrix(uint256 _matrixId) external view returns(uint256, address payable, bool, uint256[] memory) {
+    function getMatrix(uint256 _matrixId) external view returns(
+        uint256,
+        address payable,
+        bool,
+        uint256,
+        uint256[] memory
+    ) {
         return (
             matrix[_matrixId].parentMatrixId,
             matrix[_matrixId].userAddress,
             matrix[_matrixId].closed,
+            matrix[_matrixId].subtreeMatrixCount,
             matrix[_matrixId].childMatrixIds
         );
     }
@@ -159,7 +166,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         return _newCost;
     }
 
-    function _createUser(address _userAddress, address _referrerAddress) private returns(uint256) {
+    function _createUser(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
         require(_isUserExists(_referrerAddress) || users[_userAddress].id == rootUserId, "Matrix: referrer not exists");
 
@@ -196,42 +203,65 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             parentMatrixId: uint(0),
             userAddress: _userAddress,
             closed: false,
+            subtreeMatrixCount: 0,
             childMatrixIds: new uint256[](0)
         });
         users[_userAddress].matrixIds.push(matrixCount);
-        
-        uint256 parentLastMatrixId = _getParentMatrixId(_parentAddress);
-        matrix[matrixCount].parentMatrixId = parentLastMatrixId;
-        matrix[parentLastMatrixId].childMatrixIds.push(matrixCount);
-
         uint256 newMatrixIndex = matrixCount;
         matrixCount = matrixCount.add(1);
-
-        if (parentLastMatrixId != 0)
-            if (!_isFilledMatrix(parentLastMatrixId)) {
-                _makeRewards(matrix[parentLastMatrixId].userAddress);
-            } else {
-                matrix[parentLastMatrixId].closed = true;
-                _createMatrix(
-                    matrix[parentLastMatrixId].userAddress,
-                    matrix[matrix[parentLastMatrixId].parentMatrixId].userAddress
-                );
-
-                emit Reinvest(newMatrixIndex, _userAddress, block.timestamp);
-            }
-        else {
-            _makeRewards(_userAddress);
+        
+        // if parent user is root
+        if (_parentAddress == address(0)) {
+            _makeRewards(0);
+            emit MatrixCreated(newMatrixIndex, uint(0), _userAddress, block.timestamp);
+            return newMatrixIndex;
         }
 
-        emit MatrixCreated(newMatrixIndex, parentLastMatrixId, _userAddress, block.timestamp);
+        // find matrix where to attach
+        uint256 referrerActualMatrixId = users[_parentAddress].matrixIds[users[_parentAddress].matrixIds.length.sub(1)];
+        uint256 parentMatrixId = _getParentMatrixId(referrerActualMatrixId);
+
+        // binding new matrix to parent matrix
+        matrix[newMatrixIndex].parentMatrixId = parentMatrixId;
+        matrix[parentMatrixId].childMatrixIds.push(newMatrixIndex);
+
+        // recalculate subtree params
+        uint256 subtreeParentId = newMatrixIndex;
+        for (uint256 i = 0; i < _getSubtreeHeight(); i++) {
+            subtreeParentId = matrix[subtreeParentId].parentMatrixId;
+            if (subtreeParentId == 0) {
+                _makeRewards(0);
+                emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
+                return newMatrixIndex;
+            }
+            matrix[subtreeParentId].subtreeMatrixCount = matrix[subtreeParentId].subtreeMatrixCount.add(1); 
+        }
+
+        // make rewards or reinvest
+        if (matrix[subtreeParentId].subtreeMatrixCount < _getRefferalsLimit()) {
+            // _makeRewards(parentLastMatrixId);
+        } else {
+            matrix[subtreeParentId].closed = true;
+            _createMatrix(
+                matrix[subtreeParentId].userAddress,
+                users[matrix[subtreeParentId].userAddress].referrerAddress
+            );
+
+            emit Reinvest(newMatrixIndex, _userAddress, block.timestamp);
+        }
+
+        emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
 
         return newMatrixIndex; 
+    }
+
+    function resolveFilling(uint256 _id) external view returns(uint) {
+        return _getParentMatrixId(_id);
     }
 
     //
     // Internal methods
     //
-
 
     function _rewardLeaders(uint256 _rewardAmount) internal {
         uint256 value30Percent = _rewardAmount.mul(30).div(100);
@@ -274,12 +304,14 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     //
     // Hooks
-    //
+    // 
 
-    function _getParentMatrixId(address _userAddress) internal view returns(uint256);
+    function _makeRewards(uint256 _newMatrixIndex) internal;
 
-    function _makeRewards(address payable _upline) internal;
+    function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256);
 
-    function _isFilledMatrix(uint256 _matrixId) internal view returns(bool);
+    function _getSubtreeHeight() internal pure returns(uint256);
+
+    function _getRefferalsLimit() internal pure returns(uint256);
 
 }

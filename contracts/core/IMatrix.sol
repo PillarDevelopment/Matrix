@@ -6,6 +6,7 @@ interface IMatrix {
         uint256 parentMatrixId;
         address payable userAddress;
         bool closed;
+        uint256 subtreeMatrixCount;
         uint256[] childMatrixIds;
     }
 
@@ -22,6 +23,12 @@ interface IMatrix {
 
     function getUser(address _userAddress) external view returns(uint256, address, uint256, uint256[] memory);
 
-    function getMatrix(uint256 _matrixId) external view returns(uint256, address payable, bool, uint256[] memory);
+    function getMatrix(uint256 _matrixId) external view returns(
+        uint256,
+        address payable,
+        bool,
+        uint256,
+        uint256[] memory
+    );
 
 }
