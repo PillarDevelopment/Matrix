@@ -230,7 +230,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         for (uint256 i = 0; i < _getSubtreeHeight(); i++) {
             subtreeParentId = matrix[subtreeParentId].parentMatrixId;
             if (subtreeParentId == 0) {
-                _makeRewards(0);
+                _makeRewards(0);  // TODO maybe bug
                 emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
                 return newMatrixIndex;
             }

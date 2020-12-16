@@ -19,12 +19,6 @@ contract MatrixOne is MatrixCore {
     using SafeMath for uint256;
 
     //
-    // Constants
-    //
-
-    uint256 public constant matrixReferralsLimit = 3;
-
-    //
     // Constructor
     //
 
@@ -33,14 +27,6 @@ contract MatrixOne is MatrixCore {
     //
     // Hooks implementations
     //
-
-    function _getParentMatrixId(address _userAddress) internal view returns(uint256) {
-        if (_userAddress == address(0)) {
-            return 0;
-        }
-        return users[_userAddress].matrixIds[users[_userAddress].matrixIds.length.sub(1)];
-    }
-
 
     function _makeRewards(uint256 _newMatrixIndex) internal {
         uint256 uplineReward = msg.value.mul(9).div(10);
@@ -57,7 +43,7 @@ contract MatrixOne is MatrixCore {
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
-        return matrix[matrix[_localRootMatrix].parentMatrixId].childMatrixIds.length.sub(1);
+        return _localRootMatrix;
     }
 
     function _getSubtreeHeight() internal pure returns(uint256) {
