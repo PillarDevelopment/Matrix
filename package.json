@@ -8,25 +8,28 @@
   },
   "scripts": {
     "test": "npx truffle test",
-    "testWithGanache": "ganache-cli -q -p 7545 & npx truffle test",
+    "testWithGanache": " npx ganache-cli -q -p 7545 & npx truffle test",
     "coverage": "npx truffle run coverage",
-    "lint": "solhint contracts/**/*.sol",
-    "build": "truffle compile"
+    "lint": "npx solhint contracts/**/*.sol",
+    "build": "npx truffle compile"
   },
   "author": "",
   "license": "",
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0",
-    "@openzeppelin/test-helpers": "^0.5.5",
+    "@openzeppelin/contracts": "^2.5.1",
+    "@openzeppelin/test-helpers": "^0.5.9",
     "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
+    "@digix/doxity": "^0.5.2",
+    "eth-gas-reporter": "^0.2.20",
     "ethlint": "^1.2.5",
-    "eth-gas-reporter": "^0.2.17",
-    "ganache-cli": "^6.10.2",
+    "ganache-cli": "^6.12.1",
     "mocha-junit-reporter": "^2.0.0",
-    "solhint": "^3.2.0",
-    "solidity-coverage": "^0.7.10",
-    "truffle": "^5.1.44"
+    "solc": "^0.5.12",
+    "solhint": "^3.3.2",
+    "solidity-coverage": "^0.7.13",
+    "solidity-docgen": "^0.5.11",
+    "truffle": "^5.1.57"
   }
 }
