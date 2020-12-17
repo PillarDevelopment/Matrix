@@ -1,4 +1,5 @@
-## `IPriceController`
+# `IPriceController`
+
 
 
 
@@ -13,8 +14,10 @@
 
 
 
+---
 
-## `MatrixOne`
+# `MatrixOne`
+
 
 
 
@@ -27,7 +30,9 @@
 
 
 
+
 ### `_makeRewards(uint256 _newMatrixIndex)` (internal)
+
 
 
 
@@ -39,7 +44,9 @@
 
 
 
+
 ### `_getSubtreeHeight() → uint256` (internal)
+
 
 
 
@@ -53,8 +60,10 @@
 
 
 
+---
 
-## `MatrixThree`
+# `MatrixThree`
+
 
 
 
@@ -62,6 +71,7 @@
 
 
 ### `constructor(address payable _rootUser, address _priceController)` (public)
+
 
 
 
@@ -73,7 +83,9 @@
 
 
 
+
 ### `_makeRewards(uint256 _newMatrixIndex)` (internal)
+
 
 
 
@@ -85,7 +97,9 @@
 
 
 
+
 ### `_getSubtreeHeight() → uint256` (internal)
+
 
 
 
@@ -99,8 +113,10 @@
 
 
 
+---
 
-## `MatrixTwo`
+# `MatrixTwo`
+
 
 
 
@@ -113,7 +129,9 @@
 
 
 
+
 ### `_search(uint256 id, uint256 depth) → uint256` (public)
+
 
 
 
@@ -125,13 +143,16 @@
 
 
 
+
 ### `_getParentMatrixId(uint256 _localRootMatrix) → uint256` (internal)
 
 
 
 
 
+
 ### `_getSubtreeHeight() → uint256` (internal)
+
 
 
 
@@ -145,8 +166,10 @@
 
 
 
+---
 
-## `Context`
+# `Context`
+
 
 
 
@@ -159,7 +182,9 @@
 
 
 
+
 ### `_msgSender() → address payable` (internal)
+
 
 
 
@@ -173,8 +198,9 @@
 
 
 
+---
 
-## `Ownable`
+# `Ownable`
 
 
 
@@ -187,11 +213,13 @@
 Throws if called by any account other than the owner.
 
 
+
 ### `constructor()` (internal)
 
 
 
 Initializes the contract setting the deployer as the initial owner.
+
 
 ### `owner() → address` (public)
 
@@ -199,11 +227,13 @@ Initializes the contract setting the deployer as the initial owner.
 
 Returns the address of the current owner.
 
+
 ### `isOwner() → bool` (public)
 
 
 
 Returns true if the caller is the current owner.
+
 
 ### `renounceOwnership()` (public)
 
@@ -215,12 +245,14 @@ Leaves the contract without owner. It will not be possible to call
 NOTE: Renouncing ownership will leave the contract without an owner,
 thereby removing any functionality that is only available to the owner.
 
+
 ### `transferOwnership(address newOwner)` (public)
 
 
 
 Transfers ownership of the contract to a new account (`newOwner`).
 Can only be called by the current owner.
+
 
 ### `_transferOwnership(address newOwner)` (internal)
 
@@ -236,8 +268,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+---
 
-## `PriceController`
+# `PriceController`
 
 
 
@@ -250,13 +283,16 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `setPriceProvider(address _newPriceProvider)` (public)
 
 
 
 
 
+
 ### `updateUsdRate(uint256 _newRate)` (public)
+
 
 
 
@@ -270,8 +306,10 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+---
 
-## `ILeaderPool`
+# `ILeaderPool`
+
 
 
 
@@ -284,6 +322,7 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `getLeaderPool() → address payable[10]` (external)
 
 
@@ -292,8 +331,10 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+---
 
-## `IMatrix`
+# `IMatrix`
+
 
 
 
@@ -306,13 +347,16 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `changeEntryCost(uint256 _newCost) → uint256` (external)
 
 
 
 
 
+
 ### `getUser(address _userAddress) → uint256, address, uint256, uint256[]` (external)
+
 
 
 
@@ -326,8 +370,10 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+---
 
-## `MatrixCore`
+# `MatrixCore`
+
 
 
 
@@ -340,7 +386,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `fallback()` (external)
+
 
 
 
@@ -352,7 +400,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `changeEntryCost(uint256 _newCost) → uint256` (external)
+
 
 
 
@@ -364,7 +414,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `getLeaderPool() → address payable[10]` (external)
+
 
 
 
@@ -376,7 +428,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `getMatrix(uint256 _matrixId) → uint256, address payable, bool, uint256, uint256[]` (external)
+
 
 
 
@@ -388,7 +442,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `resolveFilling(uint256 _id) → uint256` (external)
+
 
 
 
@@ -400,7 +456,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `_nonBlockingTransfer(address payable _target, uint256 _amount)` (internal)
+
 
 
 
@@ -412,7 +470,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `_bytesToAddress(bytes _data) → address addr` (internal)
+
 
 
 
@@ -424,13 +484,16 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
 ### `_getParentMatrixId(uint256 _localRootMatrix) → uint256` (internal)
 
 
 
 
 
+
 ### `_getSubtreeHeight() → uint256` (internal)
+
 
 
 
@@ -492,8 +555,9 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+---
 
-## `MatrixOwnable`
+# `MatrixOwnable`
 
 
 
@@ -512,11 +576,13 @@ the owner.
 Throws if called by any account other than the owner.
 
 
+
 ### `constructor()` (internal)
 
 
 
 Initializes the contract setting the deployer as the initial owner.
+
 
 ### `owner() → address` (public)
 
@@ -524,11 +590,13 @@ Initializes the contract setting the deployer as the initial owner.
 
 Returns the address of the current owner.
 
+
 ### `isOwner() → bool` (public)
 
 
 
 Returns true if the caller is the current owner.
+
 
 ### `transferOwnership(address newOwner)` (public)
 
@@ -536,6 +604,7 @@ Returns true if the caller is the current owner.
 
 Transfers ownership of the contract to a new account (`newOwner`).
 Can only be called by the current owner.
+
 
 ### `_transferOwnership(address newOwner)` (internal)
 
@@ -550,3 +619,5 @@ Transfers ownership of the contract to a new account (`newOwner`).
 
 
 
+
+---

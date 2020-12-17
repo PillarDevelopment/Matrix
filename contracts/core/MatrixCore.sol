@@ -2,9 +2,9 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./MatrixOwnable.sol";
-import "./ILeaderPool.sol";
-import "./IMatrix.sol";
-import "../IPriceController.sol";
+import "../interfaces/ILeaderPool.sol";
+import "../interfaces/IMatrix.sol";
+import "../interfaces/IPriceController.sol";
 
 contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
