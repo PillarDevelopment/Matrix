@@ -23,9 +23,7 @@ Contains basic methods for working with mlm.
 
 
 ### constructor(address payable _rootUser, address _priceController) (public)
-**Params**
 
-**Returns**
 
 
 
@@ -33,21 +31,14 @@ Contains basic methods for working with mlm.
 
 
 ### fallback() (external)
-**Params**
-
-**Returns**
-
 
 
 User can register in the system by directly transferring funds to the contract
 
 
+
+
 ### register(address _referrerAddress) → uint256 userId (external)
-**Params**
-
-**Returns**
- - `userId`: New User ID
-
 
 
 Register a new user and ask him a matrix.
@@ -55,22 +46,20 @@ The new matrix binds to the parent matrix.
 
 
 
+#### Returns
+ - `userId`: New User ID
+
+
 ### changeEntryCost(uint256 _newCost) → uint256 (external)
-**Params**
-
-**Returns**
-
 
 
 Administrator function.
 Changes registration cost (US dollars).
 
 
+
+
 ### setLeaderPool(address payable[10] _leaderPool) → bool (external)
-**Params**
-
-**Returns**
-
 
 
 Administrator function.
@@ -78,40 +67,34 @@ Set the top 10 best participants in the system.
 Repetitions are allowed.
 
 
+
+
 ### getLeaderPool() → address payable[10] (external)
-**Params**
-
-**Returns**
-
 
 
 Get a list of the best participants
 
 
+
+
 ### getUser(address _userAddress) → uint256, address, uint256, uint256[] (external)
-**Params**
-
-**Returns**
-
 
 
 Get detailed information about a user
 
 
+
+
 ### getMatrix(uint256 _matrixId) → uint256, address payable, bool, uint256, uint256[] (external)
-**Params**
-
-**Returns**
-
 
 
 Get detailed information about a matrix
 
 
-### getCostSunPrice() → uint256 (public)
-**Params**
 
-**Returns**
+
+### getCostSunPrice() → uint256 (public)
+
 
 
 
@@ -119,9 +102,8 @@ Get detailed information about a matrix
 
 
 ### resolveFilling(uint256 _id) → uint256 (external)
-**Params**
 
-**Returns**
+
 
 
 
@@ -202,34 +184,29 @@ the owner.
 
 
 ### owner() → address (public)
-**Params**
-
-**Returns**
-
 
 
 Returns the address of the current owner.
 
 
+
+
 ### isOwner() → bool (public)
-**Params**
-
-**Returns**
-
 
 
 Returns true if the caller is the current owner.
 
 
+
+
 ### transferOwnership(address newOwner) (public)
-**Params**
-
-**Returns**
-
 
 
 Transfers ownership of the contract to a new account (`newOwner`).
 Can only be called by the current owner.
+
+
+
 
 
 ## Events

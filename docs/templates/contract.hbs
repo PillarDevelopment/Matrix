@@ -20,22 +20,27 @@
 {{#if (or (eq visibility "public") (eq visibility "external"))}}
 
 ### {{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}} ({{visibility}})
-**Params**
-{{#each natspec.params}}
- - `{{param}}`: {{description}}
-{{/each}}
-
-**Returns**
-{{#each natspec.returns}}
- - `{{param}}`: {{description}}
-{{/each}}
-
 {{{natspec.userdoc}}}
 
 {{{natspec.devdoc}}}
 
+{{#if natspec.params}}
+#### Params
+{{#each natspec.params}}
+ - `{{param}}`: {{description}}
+{{/each}}
+{{/if}}
+
+{{#if natspec.returns}}
+#### Returns
+{{#each natspec.returns}}
+ - `{{param}}`: {{description}}
+{{/each}}
+{{/if}}
+
 {{/if}}
 {{/each}}
+
 
 ## Events
 
