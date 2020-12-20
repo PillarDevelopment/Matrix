@@ -95,9 +95,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Register a new user and ask him a matrix.
     * The new matrix binds to the parent matrix.
+    * @param _referrerAddress Inviter's (referral's) wallet address
     * @return userId New User ID
     */
-    function register(address _referrerAddress) external payable returns(uint userId) {
+    function register(address _referrerAddress) external payable returns(uint256 userId) {
         return _register(msg.sender, _referrerAddress);
     }
 
@@ -105,8 +106,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Administrator function.
     * Changes registration cost (US dollars).
+    * @param _newCost New registration cost
+    * @return newEnryCost New registration cost
     */
-    function changeEntryCost(uint256 _newCost) external onlyOwner returns(uint) {
+    function changeEntryCost(uint256 _newCost) external onlyOwner returns(uint256 newEnryCost) {
         return _changeEntryCost(_newCost);
     }
 
@@ -114,9 +117,12 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     * @dev Administrator function.
     * Set the top 10 best participants in the system.
     * Repetitions are allowed.
+    * @param _leaderPool New leader pool
+    * @return success Indicates the success of operation
     */
-    function setLeaderPool(address payable[10] calldata _leaderPool) external onlyOwner returns(bool) {
+    function setLeaderPool(address payable[10] calldata _leaderPool) external onlyOwner returns(bool success) {
         leaderPool = _leaderPool;
+        return true;
     }
 
     /**
@@ -128,8 +134,18 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     /**
     * @dev Get detailed information about a user
+    * @param _userAddress Target wallet address
+    * @return id User Id
+    * @return referrerAddress Referrer Address
+    * @return referralsCount Referrals Count
+    * @return matrixIds User Matrix IDs
     */
-    function getUser(address _userAddress) external view returns(uint256, address, uint256, uint256[] memory) {
+    function getUser(address _userAddress) external view returns(
+        uint256 id,
+        address referrerAddress,
+        uint256 referralsCount,
+        uint256[] memory matrixIds
+    ) {
         return (
             users[_userAddress].id,
             users[_userAddress].referrerAddress,
@@ -140,13 +156,19 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     /**
     * @dev Get detailed information about a matrix
+    * @param _matrixId Target matrix ID
+    * @return parentMatrixId ID of the matrix this matrix is bound to
+    * @return userAddress Matrix owner address
+    * @return closed Is the matrix full
+    * @return subtreeMatrixCount Number of matrices in a subtree
+    * @return childMatrixIds Matrices bound to this matrix
     */
     function getMatrix(uint256 _matrixId) external view returns(
-        uint256,
-        address payable,
-        bool,
-        uint256,
-        uint256[] memory
+        uint256 parentMatrixId,
+        address payable userAddress,
+        bool closed,
+        uint256 subtreeMatrixCount,
+        uint256[] memory childMatrixIds
     ) {
         return (
             matrix[_matrixId].parentMatrixId,
@@ -157,6 +179,9 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         );
     }
 
+    /**
+    * @dev Get the current registration price in tokens
+    */
     function getCostSunPrice() public view returns(uint256) {
         return matrixEntryCost.mul(priceController.getCurrentUsdRate());
     }

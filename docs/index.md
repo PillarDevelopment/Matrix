@@ -45,21 +45,30 @@ Register a new user and ask him a matrix.
 The new matrix binds to the parent matrix.
 
 
+__Params__
+ - `_referrerAddress`: Inviter's (referral's) wallet address
 
-#### Returns
+
+__Returns__
  - `userId`: New User ID
 
 
-### changeEntryCost(uint256 _newCost) → uint256 (external)
+### changeEntryCost(uint256 _newCost) → uint256 newEnryCost (external)
 
 
 Administrator function.
 Changes registration cost (US dollars).
 
 
+__Params__
+ - `_newCost`: New registration cost
 
 
-### setLeaderPool(address payable[10] _leaderPool) → bool (external)
+__Returns__
+ - `newEnryCost`: New registration cost
+
+
+### setLeaderPool(address payable[10] _leaderPool) → bool success (external)
 
 
 Administrator function.
@@ -67,6 +76,12 @@ Set the top 10 best participants in the system.
 Repetitions are allowed.
 
 
+__Params__
+ - `_leaderPool`: New leader pool
+
+
+__Returns__
+ - `success`: Indicates the success of operation
 
 
 ### getLeaderPool() → address payable[10] (external)
@@ -77,26 +92,52 @@ Get a list of the best participants
 
 
 
-### getUser(address _userAddress) → uint256, address, uint256, uint256[] (external)
+### getUser(address _userAddress) → uint256 id, address referrerAddress, uint256 referralsCount, uint256[] matrixIds (external)
 
 
 Get detailed information about a user
 
 
+__Params__
+ - `_userAddress`: Target wallet address
 
 
-### getMatrix(uint256 _matrixId) → uint256, address payable, bool, uint256, uint256[] (external)
+__Returns__
+ - `id`: User Id
+
+ - `referrerAddress`: Referrer Address
+
+ - `referralsCount`: Referrals Count
+
+ - `matrixIds`: User Matrix IDs
+
+
+### getMatrix(uint256 _matrixId) → uint256 parentMatrixId, address payable userAddress, bool closed, uint256 subtreeMatrixCount, uint256[] childMatrixIds (external)
 
 
 Get detailed information about a matrix
 
 
+__Params__
+ - `_matrixId`: Target matrix ID
+
+
+__Returns__
+ - `parentMatrixId`: ID of the matrix this matrix is bound to
+
+ - `userAddress`: Matrix owner address
+
+ - `closed`: Is the matrix full
+
+ - `subtreeMatrixCount`: Number of matrices in a subtree
+
+ - `childMatrixIds`: Matrices bound to this matrix
 
 
 ### getCostSunPrice() → uint256 (public)
 
 
-
+Get the current registration price in tokens
 
 
 
