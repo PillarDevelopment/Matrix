@@ -19,7 +19,16 @@
 {{#each ownFunctions}}
 {{#if (or (eq visibility "public") (eq visibility "external"))}}
 
-### `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` ({{visibility}})
+### {{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}} ({{visibility}})
+**Params**
+{{#each natspec.params}}
+ - `{{param}}`: {{description}}
+{{/each}}
+
+**Returns**
+{{#each natspec.returns}}
+ - `{{param}}`: {{description}}
+{{/each}}
 
 {{{natspec.userdoc}}}
 
@@ -31,7 +40,7 @@
 ## Events
 
 {{#each ownEvents}}
-### `{{name}}({{args}})`
+### {{name}}({{args}})
 
 {{{natspec.userdoc}}}
 

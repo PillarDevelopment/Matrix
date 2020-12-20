@@ -7,7 +7,7 @@ import "../interfaces/IMatrix.sol";
 import "../interfaces/IPriceController.sol";
 
 /**
- * @dev Implementation of the core of the Matrix system.
+ * @dev Implementation of the core of Matrix system.
  * Contains basic methods for working with mlm.
  */
 contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
@@ -81,6 +81,9 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         _createMatrix(_rootUser, address(0));
     }
 
+    /**
+    * @dev User can register in the system by directly transferring funds to the contract
+    */
     function() external payable {
         if (msg.data.length == 0) {
             _register(msg.sender, idToAddress[rootUserId]);
@@ -89,23 +92,43 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         }
     }
 
-    function register(address _referrerAddress) external payable returns(uint) {
+    /**
+    * @dev Register a new user and ask him a matrix.
+    * The new matrix binds to the parent matrix.
+    * @return userId New User ID
+    */
+    function register(address _referrerAddress) external payable returns(uint userId) {
         return _register(msg.sender, _referrerAddress);
     }
 
 
+    /**
+    * @dev Administrator function.
+    * Changes registration cost (US dollars).
+    */
     function changeEntryCost(uint256 _newCost) external onlyOwner returns(uint) {
         return _changeEntryCost(_newCost);
     }
 
+    /**
+    * @dev Administrator function.
+    * Set the top 10 best participants in the system.
+    * Repetitions are allowed.
+    */
     function setLeaderPool(address payable[10] calldata _leaderPool) external onlyOwner returns(bool) {
         leaderPool = _leaderPool;
     }
 
+    /**
+    * @dev Get a list of the best participants
+    */
     function getLeaderPool() external view returns(address payable[10] memory) {
         return leaderPool;
     }
 
+    /**
+    * @dev Get detailed information about a user
+    */
     function getUser(address _userAddress) external view returns(uint256, address, uint256, uint256[] memory) {
         return (
             users[_userAddress].id,
@@ -115,6 +138,9 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         );
     }
 
+    /**
+    * @dev Get detailed information about a matrix
+    */
     function getMatrix(uint256 _matrixId) external view returns(
         uint256,
         address payable,
