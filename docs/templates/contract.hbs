@@ -1,20 +1,23 @@
+{{#if natspec.devdoc}}
+{{log natspec}}
+{{log this}}
+
 # `{{name}}`
 
-{{{natspec.userdoc}}}
+{{#if natspec.userdoc}}
+```
+{{natspec.userdoc}}
+```
+{{/if}}
 
-{{{natspec.devdoc}}}
+```
+{{natspec.devdoc}}
+```
 
-{{#each ownModifiers}}
-### `{{name}}({{args}})`
-
-{{{natspec.userdoc}}}
-
-{{{natspec.devdoc}}}
-
-{{/each}}
+## Methods
 
 {{#each ownFunctions}}
-{{#if visibility}}
+{{#if (or (eq visibility "public") (eq visibility "external"))}}
 
 ### `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` ({{visibility}})
 
@@ -24,6 +27,8 @@
 
 {{/if}}
 {{/each}}
+
+## Events
 
 {{#each ownEvents}}
 ### `{{name}}({{args}})`
@@ -35,3 +40,4 @@
 {{/each}}
 
 ---
+{{/if}}

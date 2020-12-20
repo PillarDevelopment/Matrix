@@ -6,6 +6,10 @@ import "../interfaces/ILeaderPool.sol";
 import "../interfaces/IMatrix.sol";
 import "../interfaces/IPriceController.sol";
 
+/**
+ * @dev Implementation of the core of the Matrix system.
+ * Contains basic methods for working with mlm.
+ */
 contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     using SafeMath for uint256;
