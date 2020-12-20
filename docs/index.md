@@ -45,11 +45,11 @@ Register a new user and ask him a matrix.
 The new matrix binds to the parent matrix.
 
 
-__Params__
+Params
  - `_referrerAddress`: Inviter's (referral's) wallet address
 
 
-__Returns__
+Returns
  - `userId`: New User ID
 
 
@@ -60,11 +60,11 @@ Administrator function.
 Changes registration cost (US dollars).
 
 
-__Params__
+Params
  - `_newCost`: New registration cost
 
 
-__Returns__
+Returns
  - `newEnryCost`: New registration cost
 
 
@@ -76,11 +76,11 @@ Set the top 10 best participants in the system.
 Repetitions are allowed.
 
 
-__Params__
+Params
  - `_leaderPool`: New leader pool
 
 
-__Returns__
+Returns
  - `success`: Indicates the success of operation
 
 
@@ -98,11 +98,11 @@ Get a list of the best participants
 Get detailed information about a user
 
 
-__Params__
+Params
  - `_userAddress`: Target wallet address
 
 
-__Returns__
+Returns
  - `id`: User Id
 
  - `referrerAddress`: Referrer Address
@@ -118,11 +118,11 @@ __Returns__
 Get detailed information about a matrix
 
 
-__Params__
+Params
  - `_matrixId`: Target matrix ID
 
 
-__Returns__
+Returns
  - `parentMatrixId`: ID of the matrix this matrix is bound to
 
  - `userAddress`: Matrix owner address
