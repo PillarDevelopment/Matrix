@@ -2,6 +2,9 @@ const { BN, constants, expectRevert } = require("@openzeppelin/test-helpers");
 const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 
 const MatrixOne = artifacts.require('MatrixOne');
+const MatrixTwo = artifacts.require('MatrixTwo');
+const MatrixThree = artifacts.require('MatrixThree');
+const MatrixFour = artifacts.require('MatrixFour');
 const PriceController = artifacts.require('PriceController');
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -22,7 +25,7 @@ function arraysEqual(a, b) {
     return true;
   }
 
-contract('MatrixOne', (accounts) => {
+contract('MatrixTwo', (accounts) => {
     const OWNER_ADDRESS = accounts[0];
     const ROOT_ADDRESS = accounts[1];
 
@@ -34,7 +37,7 @@ contract('MatrixOne', (accounts) => {
         beforeEach(async () => {
             priceController = await PriceController.new();
             await priceController.updateUsdRate(1);
-            instance = await MatrixOne.new(ROOT_ADDRESS, priceController.address);
+            instance = await MatrixTwo.new(ROOT_ADDRESS, priceController.address);
         });
 
         it('register-fallback', async () => {
@@ -276,7 +279,7 @@ contract('MatrixOne', (accounts) => {
         beforeEach(async () => {
             priceController = await PriceController.new();
             await priceController.updateUsdRate(1);
-            instance = await MatrixOne.new(ROOT_ADDRESS, priceController.address);
+            instance = await MatrixTwo.new(ROOT_ADDRESS, priceController.address);
         });
 
         it('register(...)', async () => {
@@ -338,17 +341,20 @@ contract('MatrixOne', (accounts) => {
         beforeEach(async () => {
             priceController = await PriceController.new();
             await priceController.updateUsdRate(1);
-            instance = await MatrixOne.new(ROOT_ADDRESS, priceController.address);
+            instance = await MatrixTwo.new(ROOT_ADDRESS, priceController.address);
         });
 
         it('overflow 1', async () => {
             await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 50});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
             await assert.equal(rootUser.referrerAddress, ZERO_ADDRESS, "Check rootUser properties (referrerAddress)");
-            await assert.equal(rootUser.referralsCount, 2, "Check rootUser properties (referralsCount)");
+            await assert.equal(rootUser.referralsCount, 5, "Check rootUser properties (referralsCount)");
             await assert.equal(rootUser.matrixIds.length, 1, "Check rootUser properties (matrixIds)");
             await assert.equal(arraysEqual(rootUser.matrixIds, [1]), true, "Check rootUser properties (matrixIds)");
 
@@ -356,33 +362,36 @@ contract('MatrixOne', (accounts) => {
             await assert.equal(matrixByRoot.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot.closed, false, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot.subtreeMatrixCount, 2, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot.subtreeMatrixCount, 5, "Check matrix properties (subtreeMatrixCount)");
             await assert.equal(matrixByRoot.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
             await assert.equal(arraysEqual(matrixByRoot.childMatrixIds, [2,3]), true, "Check matrix properties (childMatrixIds)");
 
-            await assert.equal(await instance.matrixCount(), 4, "Check matrix properties (matrixCount)");
-            await assert.equal(await instance.userCount(), 3, "Check matrix properties (userCount)");
+            await assert.equal(await instance.matrixCount(), 7, "Check matrix properties (matrixCount)");
+            await assert.equal(await instance.userCount(), 6, "Check matrix properties (userCount)");
         });
 
         it('overflow 2', async () => {
             await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
-    
+            await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[7], value: 50});
+
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
             await assert.equal(rootUser.referrerAddress, ZERO_ADDRESS, "Check rootUser properties (referrerAddress)");
-            await assert.equal(rootUser.referralsCount, 3, "Check rootUser properties (referralsCount)");
+            await assert.equal(rootUser.referralsCount, 6, "Check rootUser properties (referralsCount)");
             await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
-            await assert.equal(arraysEqual(rootUser.matrixIds, [1,5]), true, "Check rootUser properties (matrixIds)");
+            await assert.equal(arraysEqual(rootUser.matrixIds, [1,8]), true, "Check rootUser properties (matrixIds)");
 
             const matrixByRoot1 = await instance.getMatrix(rootUser.matrixIds[0]);
             await assert.equal(matrixByRoot1.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot1.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot1.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
-            await assert.equal(matrixByRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3,4]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(matrixByRoot1.subtreeMatrixCount, 6, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3]), true, "Check matrix properties (childMatrixIds)");
 
             const matrixByRoot2 = await instance.getMatrix(rootUser.matrixIds[1]);
             await assert.equal(matrixByRoot2.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
@@ -392,31 +401,35 @@ contract('MatrixOne', (accounts) => {
             await assert.equal(matrixByRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
             await assert.equal(arraysEqual(matrixByRoot2.childMatrixIds, []), true, "Check matrix properties (childMatrixIds)");
 
-            await assert.equal(await instance.matrixCount(), 6, "Check matrix properties (matrixCount)");
-            await assert.equal(await instance.userCount(), 4, "Check matrix properties (userCount)");
+            await assert.equal(await instance.matrixCount(), 9, "Check matrix properties (matrixCount)");
+            await assert.equal(await instance.userCount(), 7, "Check matrix properties (userCount)");
         });
 
         it('overflow 3', async () => {
             await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
-            await instance.register(accounts[2], {from: accounts[4], value: 50});
-            await instance.register(accounts[2], {from: accounts[5], value: 50});
-            await instance.register(accounts[2], {from: accounts[6], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 50});
+            await instance.register(accounts[2], {from: accounts[7], value: 50});
+            await instance.register(accounts[2], {from: accounts[8], value: 50});
+            await instance.register(accounts[2], {from: accounts[9], value: 50});
+            await instance.register(accounts[2], {from: accounts[10], value: 50});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
             await assert.equal(rootUser.referrerAddress, ZERO_ADDRESS, "Check rootUser properties (referrerAddress)");
-            await assert.equal(rootUser.referralsCount, 2, "Check rootUser properties (referralsCount)");
+            await assert.equal(rootUser.referralsCount, 5, "Check rootUser properties (referralsCount)");
             await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
-            await assert.equal(arraysEqual(rootUser.matrixIds, [1,8]), true, "Check rootUser properties (matrixIds)");
+            await assert.equal(arraysEqual(rootUser.matrixIds, [1,12]), true, "Check rootUser properties (matrixIds)");
 
             const matrixByRoot1 = await instance.getMatrix(rootUser.matrixIds[0]);
             await assert.equal(matrixByRoot1.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot1.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot1.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
-            await assert.equal(matrixByRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3,7]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(matrixByRoot1.subtreeMatrixCount, 6, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3]), true, "Check matrix properties (childMatrixIds)");
 
             const matrixByRoot2 = await instance.getMatrix(rootUser.matrixIds[1]);
             await assert.equal(matrixByRoot2.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
@@ -429,74 +442,82 @@ contract('MatrixOne', (accounts) => {
             const userAnotherRoot = await instance.getUser(accounts[2]);
             await assert.equal(userAnotherRoot.id, 1, "Check userAnotherRoot properties (id)");
             await assert.equal(userAnotherRoot.referrerAddress, ROOT_ADDRESS, "Check userAnotherRoot properties (referrerAddress)");
-            await assert.equal(userAnotherRoot.referralsCount, 3, "Check userAnotherRoot properties (referralsCount)");
+            await assert.equal(userAnotherRoot.referralsCount, 4, "Check userAnotherRoot properties (referralsCount)");
             await assert.equal(userAnotherRoot.matrixIds.length, 2, "Check userAnotherRoot properties (matrixIds)");
-            await assert.equal(arraysEqual(userAnotherRoot.matrixIds, [2,7]), true, "Check userAnotherRoot properties (matrixIds)");
+            await assert.equal(arraysEqual(userAnotherRoot.matrixIds, [2,11]), true, "Check userAnotherRoot properties (matrixIds)");
 
             const matrixByAnotherRoot1 = await instance.getMatrix(userAnotherRoot.matrixIds[0]);
             await assert.equal(matrixByAnotherRoot1.parentMatrixId, 1, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByAnotherRoot1.userAddress, accounts[2], "Check matrix properties (userAddress)");
             await assert.equal(matrixByAnotherRoot1.closed, true, "Check matrix properties (closed)");
-            await assert.equal(matrixByAnotherRoot1.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
-            await assert.equal(matrixByAnotherRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByAnotherRoot1.childMatrixIds, [4,5,6]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(matrixByAnotherRoot1.subtreeMatrixCount, 6, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByAnotherRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByAnotherRoot1.childMatrixIds, [4,5]), true, "Check matrix properties (childMatrixIds)");
 
             const matrixByAnotherRoot2 = await instance.getMatrix(userAnotherRoot.matrixIds[1]);
-            await assert.equal(matrixByAnotherRoot2.parentMatrixId, 1, "Check matrix properties (parentMatrixId)");
+            await assert.equal(matrixByAnotherRoot2.parentMatrixId, 3, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByAnotherRoot2.userAddress, accounts[2], "Check matrix properties (userAddress)");
             await assert.equal(matrixByAnotherRoot2.closed, false, "Check matrix properties (closed)");
             await assert.equal(matrixByAnotherRoot2.subtreeMatrixCount, 0, "Check matrix properties (subtreeMatrixCount)");
             await assert.equal(matrixByAnotherRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
             await assert.equal(arraysEqual(matrixByAnotherRoot2.childMatrixIds, []), true, "Check matrix properties (childMatrixIds)");
 
-            await assert.equal(await instance.matrixCount(), 9, "Check matrix properties (matrixCount)");
-            await assert.equal(await instance.userCount(), 6, "Check matrix properties (userCount)");
+            await assert.equal(await instance.matrixCount(), 13, "Check matrix properties (matrixCount)");
+            await assert.equal(await instance.userCount(), 10, "Check matrix properties (userCount)");
         });
 
         it('overflow 4', async () => {
             await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
-
             await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[7], value: 50});
 
             await instance.register(ROOT_ADDRESS, {from: accounts[8], value: 50});
             await instance.register(ROOT_ADDRESS, {from: accounts[9], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[10], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[11], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[12], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[13], value: 50});
+
+            await instance.register(ROOT_ADDRESS, {from: accounts[14], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[15], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[16], value: 50});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
             await assert.equal(rootUser.referrerAddress, ZERO_ADDRESS, "Check rootUser properties (referrerAddress)");
-            await assert.equal(rootUser.referralsCount, 8, "Check rootUser properties (referralsCount)");
+            await assert.equal(rootUser.referralsCount, 15, "Check rootUser properties (referralsCount)");
             await assert.equal(rootUser.matrixIds.length, 3, "Check rootUser properties (matrixIds)");
-            await assert.equal(arraysEqual(rootUser.matrixIds, [1,5,9]), true, "Check rootUser properties (matrixIds)");
+            await assert.equal(arraysEqual(rootUser.matrixIds, [1,8,15]), true, "Check rootUser properties (matrixIds)");
 
             const matrixByRoot1 = await instance.getMatrix(rootUser.matrixIds[0]);
             await assert.equal(matrixByRoot1.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot1.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot1.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
-            await assert.equal(matrixByRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3,4]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(matrixByRoot1.subtreeMatrixCount, 6, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByRoot1.childMatrixIds, [2,3]), true, "Check matrix properties (childMatrixIds)");
 
             const matrixByRoot2 = await instance.getMatrix(rootUser.matrixIds[1]);
             await assert.equal(matrixByRoot2.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot2.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot2.closed, true, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot2.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
-            await assert.equal(matrixByRoot2.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByRoot2.childMatrixIds, [6,7,8]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(matrixByRoot2.subtreeMatrixCount, 6, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot2.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByRoot2.childMatrixIds, [9,10]), true, "Check matrix properties (childMatrixIds)");
 
             const matrixByRoot3 = await instance.getMatrix(rootUser.matrixIds[2]);
             await assert.equal(matrixByRoot3.parentMatrixId, 0, "Check matrix properties (parentMatrixId)");
             await assert.equal(matrixByRoot3.userAddress, ROOT_ADDRESS, "Check matrix properties (userAddress)");
             await assert.equal(matrixByRoot3.closed, false, "Check matrix properties (closed)");
-            await assert.equal(matrixByRoot3.subtreeMatrixCount, 2, "Check matrix properties (subtreeMatrixCount)");
+            await assert.equal(matrixByRoot3.subtreeMatrixCount, 3, "Check matrix properties (subtreeMatrixCount)");
             await assert.equal(matrixByRoot3.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
-            await assert.equal(arraysEqual(matrixByRoot3.childMatrixIds, [10,11]), true, "Check matrix properties (childMatrixIds)");
+            await assert.equal(arraysEqual(matrixByRoot3.childMatrixIds, [16,17]), true, "Check matrix properties (childMatrixIds)");
         
         });
+
 
         // TODO overflow 5
 

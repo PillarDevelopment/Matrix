@@ -28,23 +28,13 @@ contract MatrixTwo is MatrixCore {
     // Private methods
     //
 
-    function _search(uint256 id, uint256 depth) public view returns(uint256) {
-    
-        if (matrix[id].childMatrixIds.length >= 1) {
-            if (depth < _getSubtreeHeight() - 1) {
-                uint256 newId = _search(matrix[id].childMatrixIds[0], depth + 1);
-                if (newId != 0) return newId;
-            }
-        }
+    function _search(uint256 id) public view returns(uint256) {
+
+        if (matrix[id].childMatrixIds.length < 2) return id;
+
+        if (matrix[matrix[id].childMatrixIds[0]].childMatrixIds.length < 2) return matrix[id].childMatrixIds[0];
         
-        if (matrix[id].childMatrixIds.length >= 2) {
-            if (depth < _getSubtreeHeight() - 1) {
-                uint256 newId = _search(matrix[id].childMatrixIds[1], depth + 1);
-                if (newId != 0) return newId;
-            } else return 0;
-        }
-        
-        return id;
+        return matrix[id].childMatrixIds[1];
     }
 
     //
@@ -68,7 +58,7 @@ contract MatrixTwo is MatrixCore {
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
-        return _search(_localRootMatrix, 0);
+        return _search(_localRootMatrix);
     }
 
     function _getSubtreeHeight() internal pure returns(uint256) {

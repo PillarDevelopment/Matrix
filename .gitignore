@@ -29,3 +29,4 @@ idea/
 # Other
 
 bin/
+coverage.json
