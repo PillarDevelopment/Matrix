@@ -86,4 +86,8 @@ contract MatrixThree is MatrixCore {
         return 39;
     }
 
+    function resolveFilling(uint256 _id) external view returns(uint) {
+        return _getParentMatrixId(_id);
+    }
+
 }

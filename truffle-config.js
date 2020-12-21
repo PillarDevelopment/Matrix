@@ -36,19 +36,6 @@ module.exports = {
       production: true        // Treats this network as if it was a public net. (default: false)
     },
   },
-    mocha: {
-        reporter: 'eth-gas-reporter',
-        reporterOptions : {
-            currency: 'USD',
-            gasPrice: 6
-        }
-    },
-    solc: {
-        optimizer: {
-            enabled: true,
-            runs: 200
-        }
-    },
   compilers: {
     solc: {
         version: "0.5.12", 

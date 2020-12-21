@@ -18,7 +18,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     // Storage
     //
 
-    uint256 public lastUserId = 0;
+    uint256 public userCount = 0;
     mapping(address => User) internal users;
     mapping(uint256 => address payable) public idToAddress;
 
@@ -88,7 +88,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         if (msg.data.length == 0) {
             _register(msg.sender, idToAddress[rootUserId]);
         } else {
-            _register(msg.sender, _bytesToAddress(msg.data));
+            revert("Matrix: Wrong method signature");
         }
     }
 
@@ -193,7 +193,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     function _register(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(msg.value == getCostSunPrice(), "Matrix: invalid sending value");
         require(_userAddress != _referrerAddress, "Matrix: invalid _userAddress value");
-        require(_referrerAddress != address(0), "Matrix: invalid _userAddress value");
+        require(_referrerAddress != address(0), "Matrix: user must not be null");
 
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
@@ -223,7 +223,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
     function _createUser(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
-        require(_isUserExists(_referrerAddress) || users[_userAddress].id == rootUserId, "Matrix: referrer not exists");
+        require(
+            _isUserExists(_referrerAddress) || _referrerAddress ==  idToAddress[rootUserId],
+            "Matrix: referrer not exists"
+        );
 
         // the referrer cannot be contract
         // solhint-disable-next-line no-inline-assembly
@@ -232,7 +235,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         require(codeSize == 0, "Matrix: new user cannot be a contract");
 
         // create user
-        uint256 newUserId = lastUserId;
+        uint256 newUserId = userCount;
         users[_userAddress] = User({
             id: newUserId,
             referrerAddress: _referrerAddress,
@@ -246,7 +249,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
         emit UserCreated(_userAddress, _referrerAddress, newUserId, block.timestamp);
 
-        lastUserId = lastUserId.add(1);
+        userCount = userCount.add(1);
 
         return newUserId;
     }
@@ -294,7 +297,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
 
         // make rewards or reinvest
         if (matrix[subtreeParentId].subtreeMatrixCount < _getRefferalsLimit()) {
-            // _makeRewards(parentLastMatrixId);
+            _makeRewards(parentMatrixId);
         } else {
             matrix[subtreeParentId].closed = true;
             _createMatrix(
@@ -308,10 +311,6 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
 
         return newMatrixIndex; 
-    }
-
-    function resolveFilling(uint256 _id) external view returns(uint) {
-        return _getParentMatrixId(_id);
     }
 
     //
@@ -349,12 +348,6 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             return true;
         }
         return (users[_user].id != 0);
-    }
-
-    function _bytesToAddress(bytes memory _data) internal pure returns (address addr) {
-        assembly {
-            addr := mload(add(_data, 20))
-        }
     }
 
     //

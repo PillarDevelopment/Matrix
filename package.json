@@ -9,7 +9,7 @@
   "scripts": {
     "test": "npx truffle test",
     "testWithGanache": " npx ganache-cli -q -p 7545 & npx truffle test",
-    "coverage": "npx truffle run coverage",
+    "coverage": "export NODE_OPTIONS=--max-old-space-size=4096 && npx truffle run coverage",
     "lint": "npx solhint contracts/**/*.sol",
     "build": "npx truffle compile",
     "docgen": "solidity-docgen -i contracts/ -o docs/ -s single -t docs/templates/ --solc-module solc"
@@ -22,7 +22,6 @@
     "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
-    "eth-gas-reporter": "^0.2.20",
     "ethlint": "^1.2.5",
     "ganache-cli": "^6.12.1",
     "mocha-junit-reporter": "^2.0.0",

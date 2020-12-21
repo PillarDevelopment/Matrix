@@ -29,12 +29,13 @@ contract MatrixOne is MatrixCore {
     //
 
     function _makeRewards(uint256 _newMatrixIndex) internal {
+        if (_newMatrixIndex == 0) return;
         uint256 uplineReward = msg.value.mul(9).div(10);
         uint256 leaderPoolReward = msg.value.sub(uplineReward);
 
-        // reward upline
-        address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
-        _nonBlockingTransfer(upline, uplineReward);
+        // reward matrix owner
+        address payable upline = matrix[_newMatrixIndex].userAddress;
+        _nonBlockingTransfer(matrix[_newMatrixIndex].userAddress, uplineReward);
 
         // reward leader pool
         _rewardLeaders(leaderPoolReward);
