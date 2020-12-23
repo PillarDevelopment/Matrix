@@ -1,6 +1,32 @@
+# Logs
+logs
+*.log
 
-src/js/metacoin-config.js
+# Directories used by tools like mocha & istanbul
+coverage.*
+coverage
+shippable
+test-results.xml
+
+# Dependency directory
 node_modules
-build
-.env
 
+# Generated files
+config/development/contracts.json
+config/development/*.sol.js
+config/test/contracts.json
+build
+dist
+
+# Privated key
+.privateKey
+
+# IDE
+.idea/
+idea/
+.vscode/
+
+# Other
+
+bin/
+coverage.json

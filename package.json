@@ -1,0 +1,34 @@
+{
+  "name": "matrix-contract",
+  "version": "1.0.0",
+  "description": "Implementation of the matrix mlm",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npx truffle test",
+    "testWithGanache": " npx ganache-cli -q -p 7545 & npx truffle test",
+    "coverage": "export NODE_OPTIONS=--max-old-space-size=4096 && npx truffle run coverage",
+    "lint": "npx solhint contracts/**/*.sol",
+    "build": "npx truffle compile",
+    "docgen": "solidity-docgen -i contracts/ -o docs/ -s single -t docs/templates/ --solc-module solc"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@openzeppelin/contracts": "^2.5.1",
+    "@openzeppelin/test-helpers": "^0.5.9",
+    "truffle-hdwallet-provider": "^1.0.17"
+  },
+  "devDependencies": {
+    "ethlint": "^1.2.5",
+    "ganache-cli": "^6.12.1",
+    "mocha-junit-reporter": "^2.0.0",
+    "solc": "^0.5.12",
+    "solhint": "^3.3.2",
+    "solidity-coverage": "^0.7.13",
+    "solidity-docgen": "^0.5.11",
+    "truffle": "^5.1.57"
+  }
+}

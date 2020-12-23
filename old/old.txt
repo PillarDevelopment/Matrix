@@ -1,0 +1,15 @@
+    function _getRecursiveFilling(uint256 _positionNumber) private view returns(uint256[] memory) {
+        uint256 counter = 0;
+        for (uint256 i = 0; i < _getRecursiveResolving(_positionNumber).length; i++) {
+            if (_getRecursiveResolving(_positionNumber)[i] == 0) {
+                break;
+            }
+            counter++;
+        }
+        
+        uint256[] memory resolvedArray = new uint256[](counter);
+        for (uint256 i = 0; i < counter; i++) {
+            resolvedArray[i] = _getRecursiveResolving(_positionNumber)[i] - 1;
+        }
+        return resolvedArray;
+    }

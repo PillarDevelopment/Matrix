@@ -1,0 +1,2 @@
+var CONTRACT_ADDRESS = "0x4368EDb182e1ecAc9D5f4096C0D0602fD4CfDec2";
+var NODE_URL = "http://localhost:8545";
