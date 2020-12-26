@@ -52,18 +52,18 @@ contract MatrixFour is MatrixCore {
     //
 
     function _makeRewards(uint256 _newMatrixIndex) internal {
-        // TODO release after testing
-        uint256 uplineReward = msg.value.mul(9).div(10);
-        uint256 leaderPoolReward = msg.value.sub(uplineReward);
+        // // TODO release after testing
+        // uint256 uplineReward = msg.value.mul(9).div(10);
+        // uint256 leaderPoolReward = msg.value.sub(uplineReward);
 
-        // reward upline
-        address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
-        _nonBlockingTransfer(upline, uplineReward);
+        // // reward upline
+        // address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
+        // _nonBlockingTransfer(upline, uplineReward);
 
-        // reward leader pool
-        _rewardLeaders(leaderPoolReward);
+        // // reward leader pool
+        // _rewardLeaders(leaderPoolReward);
 
-        emit MakedRewards(upline, block.timestamp);
+        // emit MakedRewards(upline, block.timestamp);
 
     }
 

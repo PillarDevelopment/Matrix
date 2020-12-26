@@ -63,7 +63,11 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         uint256 timestamp
     );
 
-    event MakedRewards(address payable indexed _contextUpline, uint256 timestamp);
+    event MakedRewards(
+        uint256 indexed parentMatrixIndex,
+        uint256 indexed rewardValue,
+        uint256 timestamp
+    );
     event TransferSuccess(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
     event TransferError(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
 
@@ -288,9 +292,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         for (uint256 i = 0; i < _getSubtreeHeight(); i++) {
             subtreeParentId = matrix[subtreeParentId].parentMatrixId;
             if (subtreeParentId == 0) {
-                _makeRewards(0);  // TODO maybe bug
-                emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
-                return newMatrixIndex;
+                break;
             }
             matrix[subtreeParentId].subtreeMatrixCount = matrix[subtreeParentId].subtreeMatrixCount.add(1); 
         }
@@ -300,6 +302,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             _makeRewards(parentMatrixId);
         } else {
             matrix[subtreeParentId].closed = true;
+            _makeRewards(parentMatrixId);
             _createMatrix(
                 matrix[subtreeParentId].userAddress,
                 users[matrix[subtreeParentId].userAddress].referrerAddress

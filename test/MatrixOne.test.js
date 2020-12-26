@@ -257,17 +257,23 @@ contract('MatrixOne', (accounts) => {
 
             await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 1000});
 
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000011"), +usr1Balance+30, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000012"), +usr2Balance+20, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000013"), +usr3Balance+10, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000014"), +usr4Balance+10, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000015"), +usr5Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000016"), +usr6Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000017"), +usr7Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000018"), +usr8Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000019"), +usr9Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000020"), +usr10Balance+5, "Check leader balance");
-            await assert.equal(await web3.eth.getBalance(ROOT_ADDRESS), +rootBalance+900, "Check ROOT_ADDRESS balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000011"), (BigInt(usr1Balance)+BigInt(30)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000012"), (BigInt(usr2Balance)+BigInt(20)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000013"), (BigInt(usr3Balance)+BigInt(10)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000014"), (BigInt(usr4Balance)+BigInt(10)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000015"), (BigInt(usr5Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000016"), (BigInt(usr6Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000017"), (BigInt(usr7Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000018"), (BigInt(usr8Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000019"), (BigInt(usr9Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance("0x0000000000000000000000000000000000000020"), (BigInt(usr10Balance)+BigInt(5)).toString(), "Check leader balance");
+            await assert.equal(await web3.eth.getBalance(ROOT_ADDRESS), (BigInt(rootBalance)+BigInt(900)).toString(), "Check ROOT_ADDRESS balance");
+
+            await assert.equal(
+                "0",
+                await web3.eth.getBalance(instance.address),
+                "Check contract balance"
+            );
         });
     });
 
@@ -337,13 +343,15 @@ contract('MatrixOne', (accounts) => {
     describe('matrix overflows', function () {
         beforeEach(async () => {
             priceController = await PriceController.new();
-            await priceController.updateUsdRate(1);
+            await priceController.updateUsdRate(100);
             instance = await MatrixOne.new(ROOT_ADDRESS, priceController.address);
         });
 
         it('overflow 1', async () => {
-            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
+            const rootBalance = await web3.eth.getBalance(ROOT_ADDRESS);
+
+            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 5000});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
@@ -362,12 +370,25 @@ contract('MatrixOne', (accounts) => {
 
             await assert.equal(await instance.matrixCount(), 4, "Check matrix properties (matrixCount)");
             await assert.equal(await instance.userCount(), 3, "Check matrix properties (userCount)");
+
+            await assert.equal(
+                (BigInt(rootBalance)+BigInt(9000)).toString(),
+                await web3.eth.getBalance(ROOT_ADDRESS),
+                "Check user balance"
+            );
+            await assert.equal(
+                "0",
+                await web3.eth.getBalance(instance.address),
+                "Check contract balance"
+            );
         });
 
         it('overflow 2', async () => {
-            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
+            const rootBalance = await web3.eth.getBalance(ROOT_ADDRESS);
+
+            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 5000});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
@@ -394,14 +415,27 @@ contract('MatrixOne', (accounts) => {
 
             await assert.equal(await instance.matrixCount(), 6, "Check matrix properties (matrixCount)");
             await assert.equal(await instance.userCount(), 4, "Check matrix properties (userCount)");
+
+            await assert.equal(
+                (BigInt(rootBalance)+BigInt(13500)).toString(),
+                await web3.eth.getBalance(ROOT_ADDRESS),
+                "Check user balance"
+            );
+            await assert.equal(
+                "0",
+                await web3.eth.getBalance(instance.address),
+                "Check contract balance"
+            );
         });
 
         it('overflow 3', async () => {
-            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
-            await instance.register(accounts[2], {from: accounts[4], value: 50});
-            await instance.register(accounts[2], {from: accounts[5], value: 50});
-            await instance.register(accounts[2], {from: accounts[6], value: 50});
+            const rootBalance = await web3.eth.getBalance(ROOT_ADDRESS);
+            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 5000});
+            const anotherRootBalance = await web3.eth.getBalance(accounts[2]);
+            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 5000});
+            await instance.register(accounts[2], {from: accounts[4], value: 5000});
+            await instance.register(accounts[2], {from: accounts[5], value: 5000});
+            await instance.register(accounts[2], {from: accounts[6], value: 5000});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
@@ -451,19 +485,37 @@ contract('MatrixOne', (accounts) => {
 
             await assert.equal(await instance.matrixCount(), 9, "Check matrix properties (matrixCount)");
             await assert.equal(await instance.userCount(), 6, "Check matrix properties (userCount)");
+
+            await assert.equal(
+                (BigInt(rootBalance)+BigInt(13500)).toString(),
+                await web3.eth.getBalance(ROOT_ADDRESS),
+                "Check user balance"
+            );
+            await assert.equal(
+                (BigInt(anotherRootBalance)+BigInt(9000)).toString(),
+                await web3.eth.getBalance(accounts[2]),
+                "Check user balance"
+            );
+            await assert.equal(
+                "0",
+                await web3.eth.getBalance(instance.address),
+                "Check contract balance"
+            );
         });
 
         it('overflow 4', async () => {
-            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 50});
+            const rootBalance = await web3.eth.getBalance(ROOT_ADDRESS);
 
-            await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[7], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[2], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[3], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[4], value: 5000});
 
-            await instance.register(ROOT_ADDRESS, {from: accounts[8], value: 50});
-            await instance.register(ROOT_ADDRESS, {from: accounts[9], value: 50});
+            await instance.register(ROOT_ADDRESS, {from: accounts[5], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[6], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[7], value: 5000});
+
+            await instance.register(ROOT_ADDRESS, {from: accounts[8], value: 5000});
+            await instance.register(ROOT_ADDRESS, {from: accounts[9], value: 5000});
     
             const rootUser = await instance.getUser(ROOT_ADDRESS);
             await assert.equal(rootUser.id, 0, "Check rootUser properties (id)");
@@ -495,6 +547,17 @@ contract('MatrixOne', (accounts) => {
             await assert.equal(matrixByRoot3.subtreeMatrixCount, 2, "Check matrix properties (subtreeMatrixCount)");
             await assert.equal(matrixByRoot3.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
             await assert.equal(arraysEqual(matrixByRoot3.childMatrixIds, [10,11]), true, "Check matrix properties (childMatrixIds)");
+
+            await assert.equal(
+                (BigInt(rootBalance)+BigInt(36000)).toString(),
+                await web3.eth.getBalance(ROOT_ADDRESS),
+                "Check user balance"
+            );
+            await assert.equal(
+                "0",
+                await web3.eth.getBalance(instance.address),
+                "Check contract balance"
+            );
         
         });
 
