@@ -15,7 +15,7 @@ module.exports = async function(deployer, network, accounts) {
 
         const instance = await MatrixThree.at((await MatrixThree.deployed()).address);
 
-        for (let i = 2; i < 37; i++) {
+        for (let i = 2; i < 92; i++) {
             await instance.register(ROOT_ADDRESS, {from: accounts[i], value: 50});
             
         }

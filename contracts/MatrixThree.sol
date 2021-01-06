@@ -53,20 +53,29 @@ contract MatrixThree is MatrixCore {
     // Hooks implementations
     //
 
-    function _makeRewards(uint256 _newMatrixIndex) internal {
-        // // TODO release after testing
-        // uint256 uplineReward = msg.value.mul(9).div(10);
-        // uint256 leaderPoolReward = msg.value.sub(uplineReward);
+    function _makeRewards(uint256 _parentMatrixId) internal {
+        uint256[3] memory uplineRewards = [msg.value.mul(1).div(10), msg.value.mul(3).div(10), msg.value.mul(5).div(10)];
+        uint256 leaderPoolReward = msg.value.mul(1).div(10);
 
-        // // reward upline
-        // address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
-        // _nonBlockingTransfer(upline, uplineReward);
+        // reward parent matrices
+        uint256 uplineMatrixId = _parentMatrixId;
+        for (uint256 i = 0; i < uplineRewards.length; i++) {
+            if (matrix[uplineMatrixId].subtreeMatrixCount >= 38) {
+                continue;
+            }
 
-        // // reward leader pool
-        // _rewardLeaders(leaderPoolReward);
+            if ((uplineMatrixId == 0)||(matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])) {    
+                _nonBlockingTransfer(idToAddress[rootUserId], uplineRewards[i]);        
+            } else {
+                _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, uplineRewards[i]);
+                uplineMatrixId = matrix[uplineMatrixId].parentMatrixId;
+            }
+        }
 
-        // emit MakedRewards(upline, block.timestamp);
+        // reward leader pool
+        _rewardLeaders(leaderPoolReward);
 
+        emit MakedRewards(_parentMatrixId, msg.value, block.timestamp);
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
