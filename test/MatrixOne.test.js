@@ -297,7 +297,7 @@ contract('MatrixOne', (accounts) => {
 
             await expectRevert(
                 instance.register(ZERO_ADDRESS, {from: accounts[3], value: 50}),
-                "Matrix: user must not be null"
+                "Matrix: parent must not be zero"
             );
 
             await expectRevert(

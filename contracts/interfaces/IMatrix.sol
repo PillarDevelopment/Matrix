@@ -3,6 +3,7 @@ pragma solidity ^0.5.12;
 interface IMatrix {
 
     struct MatrixPosition {
+        bool isCreated;
         uint256 parentMatrixId;
         address payable userAddress;
         bool closed;
@@ -11,6 +12,7 @@ interface IMatrix {
     }
 
     struct User {
+        bool isCreated;
         uint256 id;
         address referrerAddress;
         uint256 referralsCount;
@@ -21,9 +23,10 @@ interface IMatrix {
 
     function changeEntryCost(uint256 _newCost) external returns(uint256);
 
-    function getUser(address _userAddress) external view returns(uint256, address, uint256, uint256[] memory);
+    function getUser(address _userAddress) external view returns(bool, uint256, address, uint256, uint256[] memory);
 
     function getMatrix(uint256 _matrixId) external view returns(
+        bool,
         uint256,
         address payable,
         bool,

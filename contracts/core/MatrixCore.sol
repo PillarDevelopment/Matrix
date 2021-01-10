@@ -139,18 +139,21 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Get detailed information about a user
     * @param _userAddress Target wallet address
+    * @return isCreated was created or not
     * @return id User Id
     * @return referrerAddress Referrer Address
     * @return referralsCount Referrals Count
     * @return matrixIds User Matrix IDs
     */
     function getUser(address _userAddress) external view returns(
+        bool isCreated,
         uint256 id,
         address referrerAddress,
         uint256 referralsCount,
         uint256[] memory matrixIds
     ) {
-        return (
+        return(
+            users[_userAddress].isCreated,
             users[_userAddress].id,
             users[_userAddress].referrerAddress,
             users[_userAddress].referralsCount,
@@ -161,6 +164,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Get detailed information about a matrix
     * @param _matrixId Target matrix ID
+    * @return isCreated was created or not
     * @return parentMatrixId ID of the matrix this matrix is bound to
     * @return userAddress Matrix owner address
     * @return closed Is the matrix full
@@ -168,6 +172,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     * @return childMatrixIds Matrices bound to this matrix
     */
     function getMatrix(uint256 _matrixId) external view returns(
+        bool isCreated,
         uint256 parentMatrixId,
         address payable userAddress,
         bool closed,
@@ -175,6 +180,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         uint256[] memory childMatrixIds
     ) {
         return (
+            matrix[_matrixId].isCreated,
             matrix[_matrixId].parentMatrixId,
             matrix[_matrixId].userAddress,
             matrix[_matrixId].closed,
@@ -194,10 +200,19 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     // Private methods
     //
 
+    function _changeEntryCost(uint256 _newCost) private onlyOwner returns(uint256) {
+        uint256 oldCost = matrixEntryCost;
+        matrixEntryCost = _newCost;
+
+        emit MatrixEntryCostChanged(_newCost, oldCost, block.timestamp);
+
+        return _newCost;
+    }
+
     function _register(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(msg.value == getCostSunPrice(), "Matrix: invalid sending value");
         require(_userAddress != _referrerAddress, "Matrix: invalid _userAddress value");
-        require(_referrerAddress != address(0), "Matrix: user must not be null");
+        require(_referrerAddress != address(0), "Matrix: parent must not be zero");
 
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
@@ -216,19 +231,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         return newUserId;
     }
 
-    function _changeEntryCost(uint256 _newCost) private onlyOwner returns(uint256) {
-        uint256 oldCost = matrixEntryCost;
-        matrixEntryCost = _newCost;
-
-        emit MatrixEntryCostChanged(_newCost, oldCost, block.timestamp);
-
-        return _newCost;
-    }
-
     function _createUser(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
         require(
-            _isUserExists(_referrerAddress) || _referrerAddress ==  idToAddress[rootUserId],
+            _isUserExists(_referrerAddress) || _referrerAddress ==  address(0),
             "Matrix: referrer not exists"
         );
 
@@ -241,6 +247,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         // create user
         uint256 newUserId = userCount;
         users[_userAddress] = User({
+            isCreated: true,
             id: newUserId,
             referrerAddress: _referrerAddress,
             referralsCount: uint256(0),
@@ -262,6 +269,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // create matrix position
         matrix[matrixCount] = MatrixPosition({
+            isCreated: true,
             parentMatrixId: uint(0),
             userAddress: _userAddress,
             closed: false,
@@ -274,7 +282,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // if parent user is root
         if (_parentAddress == address(0)) {
-            _makeRewards(0);
+            if (matrixCount > 1) _makeRewards(0);
             emit MatrixCreated(newMatrixIndex, uint(0), _userAddress, block.timestamp);
             return newMatrixIndex;
         }
@@ -347,10 +355,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     }
 
     function _isUserExists(address _user) internal view returns(bool) {
-        if (_user == address(0)) {
-            return true;
-        }
-        return (users[_user].id != 0);
+        return (users[_user].isCreated == true);
     }
 
     //

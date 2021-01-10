@@ -568,7 +568,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // if parent user is root
         if (_parentAddress == address(0)) {
-            _makeRewards(0);
+            // _makeRewards(0);
             emit MatrixCreated(newMatrixIndex, uint(0), _userAddress, block.timestamp);
             return newMatrixIndex;
         }
