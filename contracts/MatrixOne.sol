@@ -30,8 +30,8 @@ contract MatrixOne is MatrixCore {
 
     function _makeRewards(uint256 _parentMatrixIndex) internal {
         if (matrix[_parentMatrixIndex].subtreeMatrixCount < 3) {
-            uint256 uplineReward = msg.value.mul(9).div(10);
-            uint256 leaderPoolReward = msg.value.sub(uplineReward);
+            uint256 uplineReward = msg.tokenvalue.mul(9).div(10);
+            uint256 leaderPoolReward = msg.tokenvalue.sub(uplineReward);
 
             // reward matrix owner
             address payable upline;
@@ -46,7 +46,7 @@ contract MatrixOne is MatrixCore {
             // reward leader pool
             _rewardLeaders(leaderPoolReward);
 
-            emit MakedRewards(_parentMatrixIndex, msg.value, block.timestamp);
+            emit MakedRewards(_parentMatrixIndex, msg.tokenvalue, block.timestamp);
         }
     }
 

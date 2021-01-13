@@ -1,0 +1,1 @@
+sudo docker run -it --rm   -p 9090:9090   -e "defaultBalance=1000000000"   -e "showQueryString=true" -e "allowTvmTransferTrc10=true"   -e "showBody=true"   -e "formatJson=true" -e "useDefaultPrivateKey=true" -e "mnemonic=decline soda mosquito indoor clock borrow west shadow tobacco embrace slush segment" -e "accounts=90"   --name tron   trontools/quickstart

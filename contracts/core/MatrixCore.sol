@@ -83,16 +83,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         rootUserId = _createUser(_rootUser, address(0));
         priceController = IPriceController(_priceController);
         _createMatrix(_rootUser, address(0));
-    }
 
-    /**
-    * @dev User can register in the system by directly transferring funds to the contract
-    */
-    function() external payable {
-        if (msg.data.length == 0) {
-            _register(msg.sender, idToAddress[rootUserId]);
-        } else {
-            revert("Matrix: Wrong method signature");
+        address payable initialLeaderWallet = address(uint160(address(owner())));
+        for (uint256 i = 0; i < 10; i++) {
+            leaderPool[i] = initialLeaderWallet;
         }
     }
 
@@ -126,6 +120,16 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     */
     function setLeaderPool(address payable[10] calldata _leaderPool) external onlyOwner returns(bool success) {
         leaderPool = _leaderPool;
+        return true;
+    }
+
+    function withdrawTrx(uint256 _amount) external onlyOwner returns(bool success) {
+        msg.sender.transfer(_amount);
+        return true;
+    }
+
+    function withdrawTrc10(uint256 _amount, trcToken tokenID) external onlyOwner returns(bool success) {
+        msg.sender.transferToken(_amount, tokenID);
         return true;
     }
 
@@ -210,7 +214,8 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     }
 
     function _register(address payable _userAddress, address _referrerAddress) private returns(uint256) {
-        require(msg.value == getCostSunPrice(), "Matrix: invalid sending value");
+        require(msg.tokenid == priceController.getTokenID(), "Matrix: invalid ProgramToken ID");
+        require(msg.tokenvalue == getCostSunPrice(), "Matrix: invalid sending value");
         require(_userAddress != _referrerAddress, "Matrix: invalid _userAddress value");
         require(_referrerAddress != address(0), "Matrix: parent must not be zero");
 
@@ -224,7 +229,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             _referrerAddress,
             users[_referrerAddress].id,
             newMatrixId,
-            msg.value,
+            msg.tokenvalue,
             block.timestamp
         );
 
@@ -282,7 +287,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // if parent user is root
         if (_parentAddress == address(0)) {
-            if (matrixCount > 1) _makeRewards(0);
+            if (matrixCount > 2) _makeRewards(0);
             emit MatrixCreated(newMatrixIndex, uint(0), _userAddress, block.timestamp);
             return newMatrixIndex;
         }
@@ -347,11 +352,8 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     }
 
     function _nonBlockingTransfer(address payable _target, uint256 _amount) internal {
-        if (_target.send(_amount)) {
-            emit TransferSuccess(_target, _amount, block.timestamp);
-        } else {
-            emit TransferError(_target, _amount, block.timestamp);
-        }
+        _target.transferToken(_amount, msg.tokenid);
+        emit TransferSuccess(_target, _amount, block.timestamp);
     }
 
     function _isUserExists(address _user) internal view returns(bool) {

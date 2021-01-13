@@ -1,2 +1,2 @@
-var CONTRACT_ADDRESS = "0xdF3ef6Da3590cdD592a8a471a171a14D8eA7F555";
-var NODE_URL = "http://localhost:8545";
+var CONTRACT_ADDRESS = "41fc1abd250579dcb5bc0fad6300e6f5600ddde421";
+var NODE_URL = "http://127.0.0.1:9090";

@@ -6,6 +6,8 @@ import "./interfaces/IPriceController.sol";
 
 contract PriceController is IPriceController, MatrixOwnable {
 
+    trcToken private tokenID;  // 1000495
+
     address public priceProvider;
 
     uint256 private currentUsdRate;
@@ -15,7 +17,8 @@ contract PriceController is IPriceController, MatrixOwnable {
         _;
     }
 
-    constructor() public {
+    constructor(uint256 _tokenID) public {
+        tokenID = trcToken(_tokenID);
         priceProvider = msg.sender;
     }
 
@@ -30,6 +33,10 @@ contract PriceController is IPriceController, MatrixOwnable {
 
     function getCurrentUsdRate() external view returns(uint256) {
         return currentUsdRate;
+    }
+
+    function getTokenID() public view returns(trcToken) {
+        return tokenID;
     }
 
 }

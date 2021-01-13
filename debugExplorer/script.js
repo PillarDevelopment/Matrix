@@ -14,26 +14,36 @@ window.onload = function () {
 
 function initBrowser() {
 
-    var web3 = new Web3(new Web3.providers.HttpProvider(NODE_URL));
-    var matrixContract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+    // var web3 = new Web3(new Web3.providers.HttpProvider(NODE_URL));
+    const tronWeb = new TronWeb(NODE_URL, NODE_URL, NODE_URL);
+    // const tronWeb = new TronWeb({
+    //     fullHost: NODE_URL,
+    //     // privateKey: 'e546831c355706d8018d97e486ec6de0a21e137f64781a72d8217853d38a6150'
+    // })
+    var matrixContract = tronWeb.contract(ABI, CONTRACT_ADDRESS);
+    // return;
     
     var nodeConnections = {};
     var nodeList = [];
     var rawNodes = [];
     var rawEdges = [];
 
-    matrixContract.getPastEvents('MatrixCreated', {fromBlock: 0})
+    // console.log(matrixContract);
+    tronWeb.getEventResult(CONTRACT_ADDRESS, {eventName: 'MatrixCreated', sort: "block_timestamp"})
     .then((res) => {
+        console.log(res);
+        
         res.forEach(element => {
-            nodeConnections[element['returnValues']['matrixId']] = element['returnValues']['parentMatrixId'];
-            nodeList.push(element['returnValues']);
+            nodeConnections[element['result']['matrixId']] = element['result']['parentMatrixId'];
+            nodeList.push(element['result']);
         });
         console.log(nodeConnections);
         console.log(nodeList);
+        
         for (let i = 0; i < nodeList.length; i++) {
             rawNodes.push({
                 id: nodeList[i].matrixId,
-                label: nodeList[i].matrixId + "\n" + nodeList[i].userAddress.slice(0,9)
+                label: nodeList[i].matrixId + "\n" + tronWeb.address.fromHex(nodeList[i].userAddress).slice(0,9)
             });
             let parentMatrixId = nodeConnections[nodeList[i].matrixId];
             if (parentMatrixId != 0) {
@@ -81,8 +91,11 @@ function initBrowser() {
         var network = new vis.Network(container, data, options);
 
         network.on("select", function (params) {
+
+            // console.log(tronWeb.address.fromHex(nodeList.find(x => x.matrixId === params.nodes[0]).userAddress));
             if (params.nodes[0] !== undefined) {
-                document.getElementById("selection").innerHTML = "Selected: " + nodeList[params.nodes[0] - 1].userAddress;
+                
+                document.getElementById("selection").innerHTML = "Selected: " + tronWeb.address.fromHex(nodeList.find(x => x.matrixId === params.nodes[0]).userAddress);
             } else {
                 document.getElementById("selection").innerHTML = "Selected: -";
             }
