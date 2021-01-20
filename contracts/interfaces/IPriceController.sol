@@ -8,4 +8,6 @@ interface IPriceController {
 
     function getCurrentUsdRate() external view returns(uint256);
 
+    function getTokenID() external view returns(trcToken);
+
 }

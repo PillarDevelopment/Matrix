@@ -62,11 +62,12 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         address indexed userAddress,
         uint256 timestamp
     );
-
-    event MakedRewards(address payable indexed _contextUpline, uint256 timestamp);
+    event Rewards(
+        uint256 indexed parentMatrixIndex,
+        uint256 indexed rewardValue,
+        uint256 timestamp
+    );
     event TransferSuccess(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
-    event TransferError(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
-
     event MatrixEntryCostChanged(uint256 indexed newCost, uint256 indexed oldCost, uint256 timestamp);
 
     //
@@ -79,16 +80,10 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         rootUserId = _createUser(_rootUser, address(0));
         priceController = IPriceController(_priceController);
         _createMatrix(_rootUser, address(0));
-    }
 
-    /**
-    * @dev User can register in the system by directly transferring funds to the contract
-    */
-    function() external payable {
-        if (msg.data.length == 0) {
-            _register(msg.sender, idToAddress[rootUserId]);
-        } else {
-            revert("Matrix: Wrong method signature");
+        address payable initialLeaderWallet = address(uint160(address(owner())));
+        for (uint256 i = 0; i < 10; i++) {
+            leaderPool[i] = initialLeaderWallet;
         }
     }
 
@@ -125,6 +120,16 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         return true;
     }
 
+    function withdrawTrx(uint256 _amount) external onlyOwner returns(bool success) {
+        msg.sender.transfer(_amount);
+        return true;
+    }
+
+    function withdrawTrc10(uint256 _amount, trcToken tokenID) external onlyOwner returns(bool success) {
+        msg.sender.transferToken(_amount, tokenID);
+        return true;
+    }
+
     /**
     * @dev Get a list of the best participants
     */
@@ -135,18 +140,21 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Get detailed information about a user
     * @param _userAddress Target wallet address
+    * @return isCreated was created or not
     * @return id User Id
     * @return referrerAddress Referrer Address
     * @return referralsCount Referrals Count
     * @return matrixIds User Matrix IDs
     */
     function getUser(address _userAddress) external view returns(
+        bool isCreated,
         uint256 id,
         address referrerAddress,
         uint256 referralsCount,
         uint256[] memory matrixIds
     ) {
-        return (
+        return(
+            users[_userAddress].isCreated,
             users[_userAddress].id,
             users[_userAddress].referrerAddress,
             users[_userAddress].referralsCount,
@@ -157,6 +165,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     /**
     * @dev Get detailed information about a matrix
     * @param _matrixId Target matrix ID
+    * @return isCreated was created or not
     * @return parentMatrixId ID of the matrix this matrix is bound to
     * @return userAddress Matrix owner address
     * @return closed Is the matrix full
@@ -164,6 +173,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     * @return childMatrixIds Matrices bound to this matrix
     */
     function getMatrix(uint256 _matrixId) external view returns(
+        bool isCreated,
         uint256 parentMatrixId,
         address payable userAddress,
         bool closed,
@@ -171,6 +181,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         uint256[] memory childMatrixIds
     ) {
         return (
+            matrix[_matrixId].isCreated,
             matrix[_matrixId].parentMatrixId,
             matrix[_matrixId].userAddress,
             matrix[_matrixId].closed,
@@ -190,10 +201,20 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     // Private methods
     //
 
+    function _changeEntryCost(uint256 _newCost) private onlyOwner returns(uint256) {
+        uint256 oldCost = matrixEntryCost;
+        matrixEntryCost = _newCost;
+
+        emit MatrixEntryCostChanged(_newCost, oldCost, block.timestamp);
+
+        return _newCost;
+    }
+
     function _register(address payable _userAddress, address _referrerAddress) private returns(uint256) {
-        require(msg.value == getCostSunPrice(), "Matrix: invalid sending value");
+        require(msg.tokenid == priceController.getTokenID(), "Matrix: invalid ProgramToken ID");
+        require(msg.tokenvalue == getCostSunPrice(), "Matrix: invalid sending value");
         require(_userAddress != _referrerAddress, "Matrix: invalid _userAddress value");
-        require(_referrerAddress != address(0), "Matrix: user must not be null");
+        require(_referrerAddress != address(0), "Matrix: parent must not be zero");
 
         uint256 newUserId = _createUser(_userAddress, _referrerAddress);
 
@@ -205,26 +226,17 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             _referrerAddress,
             users[_referrerAddress].id,
             newMatrixId,
-            msg.value,
+            msg.tokenvalue,
             block.timestamp
         );
 
         return newUserId;
     }
 
-    function _changeEntryCost(uint256 _newCost) private onlyOwner returns(uint256) {
-        uint256 oldCost = matrixEntryCost;
-        matrixEntryCost = _newCost;
-
-        emit MatrixEntryCostChanged(_newCost, oldCost, block.timestamp);
-
-        return _newCost;
-    }
-
     function _createUser(address payable _userAddress, address _referrerAddress) private returns(uint256) {
         require(!_isUserExists(_userAddress), "Matrix: user exists");
         require(
-            _isUserExists(_referrerAddress) || _referrerAddress ==  idToAddress[rootUserId],
+            _isUserExists(_referrerAddress) || _referrerAddress ==  address(0),
             "Matrix: referrer not exists"
         );
 
@@ -237,6 +249,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         // create user
         uint256 newUserId = userCount;
         users[_userAddress] = User({
+            isCreated: true,
             id: newUserId,
             referrerAddress: _referrerAddress,
             referralsCount: uint256(0),
@@ -258,6 +271,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // create matrix position
         matrix[matrixCount] = MatrixPosition({
+            isCreated: true,
             parentMatrixId: uint(0),
             userAddress: _userAddress,
             closed: false,
@@ -270,7 +284,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         
         // if parent user is root
         if (_parentAddress == address(0)) {
-            _makeRewards(0);
+            if (matrixCount > 2) _makeRewards(0);
             emit MatrixCreated(newMatrixIndex, uint(0), _userAddress, block.timestamp);
             return newMatrixIndex;
         }
@@ -288,9 +302,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         for (uint256 i = 0; i < _getSubtreeHeight(); i++) {
             subtreeParentId = matrix[subtreeParentId].parentMatrixId;
             if (subtreeParentId == 0) {
-                _makeRewards(0);  // TODO maybe bug
-                emit MatrixCreated(newMatrixIndex, parentMatrixId, _userAddress, block.timestamp);
-                return newMatrixIndex;
+                break;
             }
             matrix[subtreeParentId].subtreeMatrixCount = matrix[subtreeParentId].subtreeMatrixCount.add(1); 
         }
@@ -300,6 +312,7 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
             _makeRewards(parentMatrixId);
         } else {
             matrix[subtreeParentId].closed = true;
+            _makeRewards(parentMatrixId);
             _createMatrix(
                 matrix[subtreeParentId].userAddress,
                 users[matrix[subtreeParentId].userAddress].referrerAddress
@@ -336,18 +349,12 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
     }
 
     function _nonBlockingTransfer(address payable _target, uint256 _amount) internal {
-        if (_target.send(_amount)) {
-            emit TransferSuccess(_target, _amount, block.timestamp);
-        } else {
-            emit TransferError(_target, _amount, block.timestamp);
-        }
+        _target.transferToken(_amount, msg.tokenid);
+        emit TransferSuccess(_target, _amount, block.timestamp);
     }
 
     function _isUserExists(address _user) internal view returns(bool) {
-        if (_user == address(0)) {
-            return true;
-        }
-        return (users[_user].id != 0);
+        return (users[_user].isCreated == true);
     }
 
     //

@@ -28,19 +28,26 @@ contract MatrixOne is MatrixCore {
     // Hooks implementations
     //
 
-    function _makeRewards(uint256 _newMatrixIndex) internal {
-        if (_newMatrixIndex == 0) return;
-        uint256 uplineReward = msg.value.mul(9).div(10);
-        uint256 leaderPoolReward = msg.value.sub(uplineReward);
+    function _makeRewards(uint256 _parentMatrixIndex) internal {
+        if (matrix[_parentMatrixIndex].subtreeMatrixCount < 3) {
+            uint256 uplineReward = msg.tokenvalue.mul(9).div(10);
+            uint256 leaderPoolReward = msg.tokenvalue.sub(uplineReward);
 
-        // reward matrix owner
-        address payable upline = matrix[_newMatrixIndex].userAddress;
-        _nonBlockingTransfer(matrix[_newMatrixIndex].userAddress, uplineReward);
+            // reward matrix owner
+            address payable upline;
+            if (_parentMatrixIndex != 0) {
+                upline = matrix[_parentMatrixIndex].userAddress;
+            } else {
+                upline = idToAddress[rootUserId];
+            }
+            _nonBlockingTransfer(upline, uplineReward);
+        
 
-        // reward leader pool
-        _rewardLeaders(leaderPoolReward);
+            // reward leader pool
+            _rewardLeaders(leaderPoolReward);
 
-        emit MakedRewards(upline, block.timestamp);
+            emit Rewards(_parentMatrixIndex, msg.tokenvalue, block.timestamp);
+        }
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
