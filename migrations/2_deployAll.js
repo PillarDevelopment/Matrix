@@ -4,6 +4,7 @@ var PriceController = artifacts.require('PriceController');
 var MatrixOne = artifacts.require('MatrixOne');
 var MatrixTwo = artifacts.require('MatrixTwo');
 var MatrixThree = artifacts.require('MatrixThree');
+var MatrixFour = artifacts.require('MatrixFour');
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -24,7 +25,10 @@ module.exports = function(deployer, network, account) {
             await wait();
             await deployer.deploy(MatrixThree, ROOT_ADDRESS, priceControllerInst.address);
             await wait();
-            priceControllerInst.call('updateUsdRate', [1]);
+            await deployer.deploy(MatrixFour, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+            await priceControllerInst.call('updateUsdRate', [1]);
+            await wait();
         });
     }
     if (network == "shasta") {
@@ -42,6 +46,8 @@ module.exports = function(deployer, network, account) {
             await deployer.deploy(MatrixTwo, ROOT_ADDRESS, priceControllerInst.address);
             await wait();
             await deployer.deploy(MatrixThree, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+            await deployer.deploy(MatrixFour, ROOT_ADDRESS, priceControllerInst.address);
             await wait();
         });
     }

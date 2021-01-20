@@ -28,20 +28,22 @@ contract MatrixFour is MatrixCore {
     // Private methods
     //
 
-    function _search(uint256 id, uint256 depth) public view returns(uint256) {
-    
-        if (matrix[id].childMatrixIds.length >= 1) {
-            if (depth < _getSubtreeHeight() - 1) {
-                uint256 newId = _search(matrix[id].childMatrixIds[0], depth + 1);
-                if (newId != 0) return newId;
+    function _search(uint256 id) public view returns(uint256) {
+
+        uint256[] memory queue = new uint256[](100);
+        queue[0] = id;
+        uint256 queueLength = 1;
+
+        for (uint256 i = 0; i < queue.length; i++) {
+            if (matrix[queue[i]].childMatrixIds.length < 3) {
+                return queue[i];
             }
-        }
-        
-        if (matrix[id].childMatrixIds.length >= 2) {
-            if (depth < _getSubtreeHeight() - 1) {
-                uint256 newId = _search(matrix[id].childMatrixIds[1], depth + 1);
-                if (newId != 0) return newId;
-            } else return 0;
+            else if (i <= 39) {
+                for (uint256 j = 0; j < 3; j++) {
+                    queue[queueLength] = matrix[queue[i]].childMatrixIds[j];
+                    queueLength++;
+                }
+            }
         }
         
         return id;
@@ -51,32 +53,54 @@ contract MatrixFour is MatrixCore {
     // Hooks implementations
     //
 
-    function _makeRewards(uint256 _newMatrixIndex) internal {
-        // // TODO release after testing
-        // uint256 uplineReward = msg.value.mul(9).div(10);
-        // uint256 leaderPoolReward = msg.value.sub(uplineReward);
+    function _makeRewards(uint256 _parentMatrixId) internal {
+        uint256[5] memory uplineRewards = [msg.tokenvalue.mul(1).div(10), msg.tokenvalue.mul(3).div(20), msg.tokenvalue.mul(1).div(5), msg.tokenvalue.mul(1).div(4), msg.tokenvalue.mul(3).div(10)];
+        // uint256 leaderPoolReward = msg.tokenvalue.mul(1).div(10);
 
-        // // reward upline
-        // address payable upline = matrix[matrix[_newMatrixIndex].parentMatrixId].userAddress;
-        // _nonBlockingTransfer(upline, uplineReward);
+        // reward parent matrices
+        uint256 uplineMatrixId = _parentMatrixId;
+        for (uint256 i = 0; i < uplineRewards.length; i++) {
+            if (matrix[uplineMatrixId].subtreeMatrixCount == 360) {
+                if ((uplineMatrixId == 0)||(matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])) {    
+                    _nonBlockingTransfer(idToAddress[rootUserId], msg.tokenvalue.div(10));        
+                } else {
+                    _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, msg.tokenvalue.div(10));
+                    uplineMatrixId = matrix[uplineMatrixId].parentMatrixId;
+                }
+                continue;
+            }
+            if (matrix[uplineMatrixId].subtreeMatrixCount >= 361) {
+                continue;
+            }
 
-        // // reward leader pool
+            if ((uplineMatrixId == 0)||(matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])) {    
+                _nonBlockingTransfer(idToAddress[rootUserId], uplineRewards[i]);        
+            } else {
+                _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, uplineRewards[i]);
+                uplineMatrixId = matrix[uplineMatrixId].parentMatrixId;
+            }
+        }
+
+        // reward leader pool
         // _rewardLeaders(leaderPoolReward);
 
-        // emit MakedRewards(upline, block.timestamp);
-
+        emit MakedRewards(_parentMatrixId, msg.tokenvalue, block.timestamp);
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
-        return _search(_localRootMatrix, 0);
+        return _search(_localRootMatrix);
     }
 
     function _getSubtreeHeight() internal pure returns(uint256) {
-        return 2;
+        return 5;
     }
 
     function _getRefferalsLimit() internal pure returns(uint256) {
-        return 6;
+        return 363;
+    }
+
+    function resolveFilling(uint256 _id) external view returns(uint) {
+        return _getParentMatrixId(_id);
     }
 
 }

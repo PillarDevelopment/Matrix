@@ -12,10 +12,12 @@ window.onload = function () {
     initBrowser();
 }
 
+var tronWeb;
+
 function initBrowser() {
 
     // var web3 = new Web3(new Web3.providers.HttpProvider(NODE_URL));
-    const tronWeb = new TronWeb(NODE_URL, NODE_URL, NODE_URL);
+    tronWeb = new TronWeb(NODE_URL, NODE_URL, NODE_URL);
     // const tronWeb = new TronWeb({
     //     fullHost: NODE_URL,
     //     // privateKey: 'e546831c355706d8018d97e486ec6de0a21e137f64781a72d8217853d38a6150'
@@ -29,7 +31,7 @@ function initBrowser() {
     var rawEdges = [];
 
     // console.log(matrixContract);
-    tronWeb.getEventResult(CONTRACT_ADDRESS, {eventName: 'MatrixCreated', sort: "block_timestamp"})
+    tronWeb.getEventResult(CONTRACT_ADDRESS, {eventName: 'MatrixCreated', sort: "block_timestamp", size: 200})
     .then((res) => {
         console.log(res);
         

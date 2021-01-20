@@ -23,7 +23,7 @@ Then, run the migration with:
     shasta: {
       privateKey: process.env.PRIVATE_KEY_SHASTA,
       // userFeePercentage: 50,
-      // feeLimit: 1e9,
+      // feeLimit: 1e10,
       fullHost: 'https://api.shasta.trongrid.io',
       network_id: '2'
     },
@@ -45,5 +45,9 @@ Then, run the migration with:
         version: '0.5.12'
       }
     }
-  }
+  },
+  mocha: {
+    enableTimeouts: false,
+    before_timeout: 120000 // Here is 2min but can be whatever timeout is suitable for you.
+  },
 }
