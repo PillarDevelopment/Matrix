@@ -75,7 +75,7 @@ contract MatrixThree is MatrixCore {
         // reward leader pool
         _rewardLeaders(leaderPoolReward);
 
-        emit MakedRewards(_parentMatrixId, msg.value, block.timestamp);
+        emit Rewards(_parentMatrixId, msg.value, block.timestamp);
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {

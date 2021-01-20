@@ -46,7 +46,7 @@ contract MatrixOne is MatrixCore {
             // reward leader pool
             _rewardLeaders(leaderPoolReward);
 
-            emit MakedRewards(_parentMatrixIndex, msg.tokenvalue, block.timestamp);
+            emit Rewards(_parentMatrixIndex, msg.tokenvalue, block.timestamp);
         }
     }
 

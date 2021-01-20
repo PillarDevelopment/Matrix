@@ -51,4 +51,25 @@ module.exports = function(deployer, network, account) {
             await wait();
         });
     }
+
+    if (network == "mainnet") {
+        deployer.then(async () => {
+            ROOT_ADDRESS = await "";
+
+            await deployer.deploy(PriceController, 1000495);
+            await wait();
+            var priceControllerInst = await PriceController.deployed();
+
+            await priceControllerInst.call('updateUsdRate', [1]);
+            await wait();
+            await deployer.deploy(MatrixOne, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+            await deployer.deploy(MatrixTwo, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+            await deployer.deploy(MatrixThree, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+            await deployer.deploy(MatrixFour, ROOT_ADDRESS, priceControllerInst.address);
+            await wait();
+        });
+    }
 };

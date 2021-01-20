@@ -30,7 +30,7 @@ contract MatrixFour is MatrixCore {
 
     function _search(uint256 id) public view returns(uint256) {
 
-        uint256[] memory queue = new uint256[](100);
+        uint256[] memory queue = new uint256[](200);
         queue[0] = id;
         uint256 queueLength = 1;
 
@@ -55,16 +55,15 @@ contract MatrixFour is MatrixCore {
 
     function _makeRewards(uint256 _parentMatrixId) internal {
         uint256[5] memory uplineRewards = [msg.tokenvalue.mul(1).div(10), msg.tokenvalue.mul(3).div(20), msg.tokenvalue.mul(1).div(5), msg.tokenvalue.mul(1).div(4), msg.tokenvalue.mul(3).div(10)];
-        // uint256 leaderPoolReward = msg.tokenvalue.mul(1).div(10);
 
         // reward parent matrices
         uint256 uplineMatrixId = _parentMatrixId;
         for (uint256 i = 0; i < uplineRewards.length; i++) {
             if (matrix[uplineMatrixId].subtreeMatrixCount == 360) {
                 if ((uplineMatrixId == 0)||(matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])) {    
-                    _nonBlockingTransfer(idToAddress[rootUserId], msg.tokenvalue.div(10));        
+                    _nonBlockingTransfer(idToAddress[rootUserId], msg.tokenvalue.mul(2).div(10));        
                 } else {
-                    _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, msg.tokenvalue.div(10));
+                    _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, msg.tokenvalue.mul(2).div(10));
                     uplineMatrixId = matrix[uplineMatrixId].parentMatrixId;
                 }
                 continue;
@@ -81,10 +80,7 @@ contract MatrixFour is MatrixCore {
             }
         }
 
-        // reward leader pool
-        // _rewardLeaders(leaderPoolReward);
-
-        emit MakedRewards(_parentMatrixId, msg.tokenvalue, block.timestamp);
+        emit Rewards(_parentMatrixId, msg.tokenvalue, block.timestamp);
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {

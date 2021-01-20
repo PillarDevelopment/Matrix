@@ -62,15 +62,12 @@ contract MatrixCore is IMatrix, ILeaderPool, MatrixOwnable {
         address indexed userAddress,
         uint256 timestamp
     );
-
-    event MakedRewards(
+    event Rewards(
         uint256 indexed parentMatrixIndex,
         uint256 indexed rewardValue,
         uint256 timestamp
     );
     event TransferSuccess(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
-    event TransferError(address payable indexed recipient, uint256 indexed value, uint256 timestamp);
-
     event MatrixEntryCostChanged(uint256 indexed newCost, uint256 indexed oldCost, uint256 timestamp);
 
     //
