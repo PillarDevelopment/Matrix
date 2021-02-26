@@ -1,35 +1,43 @@
 /**
  *
- * ooo        ooooo               .             o8o                     .oooo.   
- * `88.       .888'             .o8             `"'                   .dP""Y88b  
- *  888b     d'888   .oooo.   .o888oo oooo d8b oooo  oooo    ooo            ]8P' 
- *  8 Y88. .P  888  `P  )88b    888   `888""8P `888   `88b..8P'           <88b.  
- *  8  `888'   888   .oP"888    888    888      888     Y888'              `88b. 
- *  8    Y     888  d8(  888    888 .  888      888   .o8"'88b        o.   .88P  
- * o8o        o888o `Y888""8o   "888" d888b    o888o o88'   888o      `8bd88P' 
+ * ooo        ooooo               .             o8o                     .oooo.
+ * `88.       .888'             .o8             `"'                   .dP""Y88b
+ *  888b     d'888   .oooo.   .o888oo oooo d8b oooo  oooo    ooo            ]8P'
+ *  8 Y88. .P  888  `P  )88b    888   `888""8P `888   `88b..8P'           <88b.
+ *  8  `888'   888   .oP"888    888    888      888     Y888'              `88b.
+ *  8    Y     888  d8(  888    888 .  888      888   .o8"'88b        o.   .88P
+ * o8o        o888o `Y888""8o   "888" d888b    o888o o88'   888o      `8bd88P'
  *
  **/
 
 pragma solidity ^0.5.12;
 
 import "./core/MatrixCore.sol";
+import "./core/MatrixLeaderPool.sol";
 
-contract MatrixThree is MatrixCore {
-
+contract MatrixThree is MatrixCore, MatrixLeaderPool {
     using SafeMath for uint256;
 
     //
     // Constructor
     //
 
-    constructor(address payable _rootUser, address _priceController) MatrixCore(_rootUser, _priceController) public {}
+    constructor(address payable _rootUser, address _priceController)
+        public
+        MatrixCore(_rootUser, _priceController)
+    {
+        address payable initialLeaderWallet =
+            address(uint160(address(owner())));
+        for (uint256 i = 0; i < 10; i++) {
+            leaderPool[i] = initialLeaderWallet;
+        }
+    }
 
     //
     // Private methods
     //
 
-    function _search(uint256 id) public view returns(uint256) {
-
+    function _search(uint256 id) public view returns (uint256) {
         uint256[] memory queue = new uint256[](13);
         queue[0] = id;
         uint256 queueLength = 1;
@@ -37,15 +45,14 @@ contract MatrixThree is MatrixCore {
         for (uint256 i = 0; i < queue.length; i++) {
             if (matrix[queue[i]].childMatrixIds.length < 3) {
                 return queue[i];
-            }
-            else if (i <= 3) {
+            } else if (i <= 3) {
                 for (uint256 j = 0; j < 3; j++) {
                     queue[queueLength] = matrix[queue[i]].childMatrixIds[j];
                     queueLength++;
                 }
             }
         }
-        
+
         return id;
     }
 
@@ -54,7 +61,12 @@ contract MatrixThree is MatrixCore {
     //
 
     function _makeRewards(uint256 _parentMatrixId) internal {
-        uint256[3] memory uplineRewards = [msg.value.mul(1).div(10), msg.value.mul(3).div(10), msg.value.mul(5).div(10)];
+        uint256[3] memory uplineRewards =
+            [
+                msg.value.mul(1).div(10),
+                msg.value.mul(3).div(10),
+                msg.value.mul(5).div(10)
+            ];
         uint256 leaderPoolReward = msg.value.mul(1).div(10);
 
         // reward parent matrices
@@ -64,10 +76,16 @@ contract MatrixThree is MatrixCore {
                 continue;
             }
 
-            if ((uplineMatrixId == 0)||(matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])) {    
-                _nonBlockingTransfer(idToAddress[rootUserId], uplineRewards[i]);        
+            if (
+                (uplineMatrixId == 0) ||
+                (matrix[uplineMatrixId].userAddress == idToAddress[rootUserId])
+            ) {
+                _nonBlockingTransfer(idToAddress[rootUserId], uplineRewards[i]);
             } else {
-                _nonBlockingTransfer(matrix[uplineMatrixId].userAddress, uplineRewards[i]);
+                _nonBlockingTransfer(
+                    matrix[uplineMatrixId].userAddress,
+                    uplineRewards[i]
+                );
                 uplineMatrixId = matrix[uplineMatrixId].parentMatrixId;
             }
         }
@@ -78,20 +96,19 @@ contract MatrixThree is MatrixCore {
         emit Rewards(_parentMatrixId, msg.value, block.timestamp);
     }
 
-    function _getParentMatrixId(uint256 _localRootMatrix) internal view returns(uint256) {
+    function _getParentMatrixId(uint256 _localRootMatrix)
+        internal
+        view
+        returns (uint256)
+    {
         return _search(_localRootMatrix);
     }
 
-    function _getSubtreeHeight() internal pure returns(uint256) {
+    function _getSubtreeHeight() internal pure returns (uint256) {
         return 3;
     }
 
-    function _getRefferalsLimit() internal pure returns(uint256) {
+    function _getRefferalsLimit() internal pure returns (uint256) {
         return 39;
     }
-
-    function resolveFilling(uint256 _id) external view returns(uint) {
-        return _getParentMatrixId(_id);
-    }
-
 }

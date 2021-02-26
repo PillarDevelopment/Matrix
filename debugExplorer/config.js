@@ -1,2 +1,2 @@
-var CONTRACT_ADDRESS = "41597f0ae748e7fe713c66b233b6e722226584aa2a";
-var NODE_URL = "http://127.0.0.1:9090";
+var CONTRACT_ADDRESS = "TPU3FSnABVepPyscR23WCMaYdUNin3vrkD";
+var NODE_URL = "https://api.shasta.trongrid.io";
