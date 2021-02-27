@@ -1,43 +1,57 @@
 const { constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
 const MatrixOne = artifacts.require('MatrixOne');
+const ZERO_ADDRESS = "T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb";
 
 contract('MatrixOwnable', function (accounts) {
-  const [ owner, other ] = accounts;
+  
+  const [owner, other] = accounts;
 
   beforeEach(async function () {
-    this.ownable = await MatrixOne.new(accounts[0], ZERO_ADDRESS, { from: owner });
+    this.ownable = await MatrixOne.deployed();
   });
 
   it('has an owner', async function () {
-    expect(await this.ownable.owner()).to.equal(owner);
+    expect(tronWeb.address.fromHex(await this.ownable.owner())).to.equal(owner);
   });
 
-  describe('transfer ownership', function () {
-    it('changes owner after transfer', async function () {
-      const receipt = await this.ownable.transferOwnership(other, { from: owner });
-      expectEvent(receipt, 'OwnershipTransferred');
 
-      expect(await this.ownable.owner()).to.equal(other);
-    });
+  it('changes owner after transfer', async function () {
+    const receipt = await this.ownable.transferOwnership(other, { from: owner, shouldPollResponse: true });
 
-    it('prevents non-owners from transferring', async function () {
-      await expectRevert(
-        this.ownable.transferOwnership(other, { from: other }),
-        'Ownable: caller is not the owner',
-      );
-    });
-
-    it('guards ownership against stuck state', async function () {
-      await expectRevert(
-        this.ownable.transferOwnership(ZERO_ADDRESS, { from: owner }),
-        'Ownable: new owner is the zero address',
-      );
-    });
+    expect(tronWeb.address.fromHex(await this.ownable.owner())).to.equal(other);
   });
+
+  it('prevents non-owners from transferring', async function () {
+    try {
+      await this.ownable.transferOwnership(other, { from: owner, shouldPollResponse: true })
+    } catch {
+      return;
+    }
+    throw "an exception should have been thrown";
+  });
+
+  it('guards ownership against stuck state', async function () {
+    try {
+      await this.ownable.transferOwnership(ZERO_ADDRESS, { from: other, shouldPollResponse: true })
+    } catch {
+      return;
+    }
+    throw "an exception should have been thrown";
+  });
+
+  it('prevents non-owners from transferring (reverse)', async function () {
+    await this.ownable.transferOwnership(owner, { from: other, shouldPollResponse: true })
+    try {
+      await this.ownable.transferOwnership(owner, { from: other, shouldPollResponse: true })
+    } catch {
+      return;
+    }
+    throw "an exception should have been thrown";
+  });
+
 
 
 });

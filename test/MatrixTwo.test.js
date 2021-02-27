@@ -409,7 +409,9 @@ contract('MatrixTwo', (accounts) => {
 
 
     it('overflow 1', async () => {
-        const root = await accounts[4];
+        await console.log(tronWeb.address.fromHex(matrixInstance.address));
+
+        const root = await accounts[8];
         await priceController.updateUsdRate(100);
         await matrixInstance.changeEntryCost(50, {from: accounts[0]});
 
@@ -452,10 +454,10 @@ contract('MatrixTwo', (accounts) => {
             tokenValue: 5000,
             shouldPollResponse: true,
         })
-        
+        await wait(0.5);
 
         const rootUser = await matrixInstance.getUser(root);
-        await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), ROOT_ADDRESS, "Check rootUser properties (referrerAddress)");
+        await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), accounts[6], "Check rootUser properties (referrerAddress)");
         await assert.equal(rootUser.referralsCount.toNumber(), 5, "Check rootUser properties (referralsCount)");
         await assert.equal(rootUser.matrixIds.length, 1, "Check rootUser properties (matrixIds)");
 
@@ -480,260 +482,449 @@ contract('MatrixTwo', (accounts) => {
             (await tronWeb.trx.getAccount(accounts[11])).assetV2[0].value,
             "Check user balance"
         );
-        // await assert.equal(
-        //     contractBalance + 2500,
-        //     (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
-        //     "Check contract balance"
-        // );
+        
+        await assert.equal(
+            contractBalance + 2500,
+            (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
+            "Check contract balance"
+        );
+    
     });
 
-    // it('overflow 2', async () => {
-    //     const root = await accounts[6];
+    it('overflow 2', async () => {
+        await matrixInstance.register(accounts[4], {
+            from: accounts[15],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const root = await accounts[15];
+        const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value
 
-    //     const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value
-
-    //     var contractBalance;
-    //     if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
-    //         contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
-    //     }
+        var contractBalance;
+        if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
+            contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
+        }
     
-    //     await matrixInstance.register(root, {
-    //         from: accounts[12],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[13],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[14],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
+        await matrixInstance.register(root, {
+            from: accounts[16],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot1Balance = (await tronWeb.trx.getAccount(accounts[16])).assetV2[0].value
+        await matrixInstance.register(root, {
+            from: accounts[17],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot2Balance = (await tronWeb.trx.getAccount(accounts[17])).assetV2[0].value
+        await matrixInstance.register(root, {
+            from: accounts[18],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[19],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[20],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[21],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await wait(0.5);
+        const rootUser = await matrixInstance.getUser(root);
+        await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), accounts[4], "Check rootUser properties (referrerAddress)");
+        await assert.equal(rootUser.referralsCount.toNumber(), 6, "Check rootUser properties (referralsCount)");
+        await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
 
-    //     const rootUser = await matrixInstance.getUser(root);
-    //     await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), ROOT_ADDRESS, "Check rootUser properties (referrerAddress)");
-    //     await assert.equal(rootUser.referralsCount.toNumber(), 3, "Check rootUser properties (referralsCount)");
-    //     await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
+        const matrixByRoot = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot.closed, true, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot.subtreeMatrixCount.toNumber(), 6, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     const matrixByRoot = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot.closed, true, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
+        const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot2.closed, false, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
 
-    //     const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot2.closed, false, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
-
-    //     await assert.equal(
-    //         rootBalance + 9000,
-    //         (await tronWeb.trx.getAccount(root)).assetV2[0].value,
-    //         "Check user balance"
-    //     );
-    //     await assert.equal(
-    //         contractBalance,
-    //         (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
-    //         "Check contract balance"
-    //     );
-    // });
-
-    // it('overflow 3', async () => {
-    //     const root = await accounts[8];
-
-    //     const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value;
+        await assert.equal(
+            rootBalance + 9000,
+            (await tronWeb.trx.getAccount(root)).assetV2[0].value,
+            "Check user balance"
+        );
+        await assert.equal(
+            anotherRoot1Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[16])).assetV2[0].value,
+            "Check user balance"
+        );
+        await wait(0.5);
+        await assert.equal(
+            anotherRoot2Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[17])).assetV2[0].value,
+            "Check user balance"
+        );
         
-    //     var contractBalance;
-    //     if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
-    //         contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
-    //     }
+        await assert.equal(
+            contractBalance + 2500,
+            (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
+            "Check contract balance"
+        );
+    });
 
-    //     await matrixInstance.register(root, {
-    //         from: accounts[15],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     const anotherRootBalance = (await tronWeb.trx.getAccount(accounts[15])).assetV2[0].value;
-    //     await matrixInstance.register(root, {
-    //         from: accounts[16],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(accounts[15], {
-    //         from: accounts[17],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(accounts[15], {
-    //         from: accounts[18],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(accounts[15], {
-    //         from: accounts[19],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
+    it('overflow 3', async () => {
+        const rootParentBalance = (await tronWeb.trx.getAccount(accounts[14])).assetV2[0].value;
+        await matrixInstance.register(accounts[14], {
+            from: accounts[22],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const root = await accounts[22];
 
-    //     const rootUser = await matrixInstance.getUser(root);
-    //     await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), ROOT_ADDRESS, "Check rootUser properties (referrerAddress)");
-    //     await assert.equal(rootUser.referralsCount.toNumber(), 2, "Check rootUser properties (referralsCount)");
-    //     await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
+        const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value;
+        
+        var contractBalance;
+        if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
+            contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
+        }
 
+        await matrixInstance.register(root, {
+            from: accounts[23],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRootBalance = (await tronWeb.trx.getAccount(accounts[23])).assetV2[0].value;
+        await matrixInstance.register(root, {
+            from: accounts[24],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+         await wait(0.5);
+        const anotherRoot2Balance = (await tronWeb.trx.getAccount(accounts[24])).assetV2[0].value
+        await matrixInstance.register(root, {
+            from: accounts[25],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot3Balance = (await tronWeb.trx.getAccount(accounts[25])).assetV2[0].value
+        await matrixInstance.register(root, {
+            from: accounts[26],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot4Balance = (await tronWeb.trx.getAccount(accounts[26])).assetV2[0].value
+        await matrixInstance.register(root, {
+            from: accounts[27],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(accounts[23], {
+            from: accounts[28],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+         await wait(0.5);
+        await matrixInstance.register(accounts[23], {
+            from: accounts[29],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(accounts[23], {
+            from: accounts[30],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(accounts[23], {
+            from: accounts[31],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await wait(0.5);
 
-    //     const matrixByRoot1 = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot1.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot1.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
+        const rootUser = await matrixInstance.getUser(root);
+        await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), accounts[14], "Check rootUser properties (referrerAddress)");
+        await assert.equal(rootUser.referralsCount.toNumber(), 5, "Check rootUser properties (referralsCount)");
+        await assert.equal(rootUser.matrixIds.length, 2, "Check rootUser properties (matrixIds)");
 
-    //     const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot2.closed, false, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
+        const matrixByRoot1 = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot1.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot1.subtreeMatrixCount.toNumber(), 6, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     const userAnotherRoot = await matrixInstance.getUser(accounts[15]);
-    //     await assert.equal(tronWeb.address.fromHex(userAnotherRoot.referrerAddress), root, "Check rootUser properties (referrerAddress)");
-    //     await assert.equal(userAnotherRoot.referralsCount.toNumber(), 3, "Check userAnotherRoot properties (referralsCount)");
-    //     await assert.equal(userAnotherRoot.matrixIds.length, 2, "Check userAnotherRoot properties (matrixIds)");
+        const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot2.closed, false, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
 
-    //     const matrixByAnotherRoot1 = await matrixInstance.getMatrix(userAnotherRoot.matrixIds[0].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByAnotherRoot1.userAddress), accounts[15], "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByAnotherRoot1.closed, true, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByAnotherRoot1.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByAnotherRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
+        const userAnotherRoot = await matrixInstance.getUser(accounts[23]);
+        await assert.equal(tronWeb.address.fromHex(userAnotherRoot.referrerAddress), root, "Check rootUser properties (referrerAddress)");
+        await assert.equal(userAnotherRoot.referralsCount.toNumber(), 4, "Check userAnotherRoot properties (referralsCount)");
+        await assert.equal(userAnotherRoot.matrixIds.length, 2, "Check userAnotherRoot properties (matrixIds)");
 
-    //     const matrixByAnotherRoot2 = await matrixInstance.getMatrix(userAnotherRoot.matrixIds[1].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByAnotherRoot2.userAddress), accounts[15], "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByAnotherRoot2.closed, false, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByAnotherRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByAnotherRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
+        const matrixByAnotherRoot1 = await matrixInstance.getMatrix(userAnotherRoot.matrixIds[0].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByAnotherRoot1.userAddress), accounts[23], "Check matrix properties (userAddress)");
+        await assert.equal(matrixByAnotherRoot1.closed, true, "Check matrix properties (closed)");
+        await assert.equal(matrixByAnotherRoot1.subtreeMatrixCount.toNumber(), 6, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByAnotherRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     await assert.equal(
-    //         rootBalance + 9000,
-    //         (await tronWeb.trx.getAccount(root)).assetV2[0].value,
-    //         "Check user balance"
-    //     );
-    //     await assert.equal(
-    //         anotherRootBalance + 9000,
-    //         (await tronWeb.trx.getAccount(accounts[15])).assetV2[0].value,
-    //         "Check user balance"
-    //     );
-    //     await assert.equal(
-    //         contractBalance,
-    //         (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
-    //         "Check contract balance"
-    //     );
-    // });
+        const matrixByAnotherRoot2 = await matrixInstance.getMatrix(userAnotherRoot.matrixIds[1].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByAnotherRoot2.userAddress), accounts[23], "Check matrix properties (userAddress)");
+        await assert.equal(matrixByAnotherRoot2.closed, false, "Check matrix properties (closed)");
+        await assert.equal(matrixByAnotherRoot2.subtreeMatrixCount.toNumber(), 0, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByAnotherRoot2.childMatrixIds.length, 0, "Check matrix properties (childMatrixIds)");
 
-    // it('overflow 4', async () => {
-    //     const root = await accounts[9];
+        await assert.equal(
+            rootBalance + 9000,
+            (await tronWeb.trx.getAccount(root)).assetV2[0].value,
+            "Check user balance"
+        );
+        await assert.equal(
+            anotherRootBalance + 9000,
+            (await tronWeb.trx.getAccount(accounts[23])).assetV2[0].value,
+            "Check user balance"
+        );
+        await assert.equal(
+            anotherRoot2Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[24])).assetV2[0].value,
+            "Check user balance"
+        );
+        await assert.equal(
+            anotherRoot3Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[25])).assetV2[0].value,
+            "Check user balance"
+                );
+        await assert.equal(
+            anotherRoot4Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[26])).assetV2[0].value,
+            "Check user balance"
+        );
+        await assert.equal(
+            rootParentBalance + 9000,
+            (await tronWeb.trx.getAccount(accounts[14])).assetV2[0].value,
+            "Check user balance"
+        );
 
-    //     const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value;
+        await assert.equal(
+            contractBalance + 0,
+            (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
+            "Check contract balance"
+        );
+    });
 
-    //     var contractBalance;
-    //     if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
-    //         contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
-    //     }
+    it('overflow 4', async () => {
+        await matrixInstance.register(accounts[31], {
+            from: accounts[32],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const root = await accounts[32];
 
-    //     await matrixInstance.register(root, {
-    //         from: accounts[20],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[21],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[22],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
+        const rootBalance = (await tronWeb.trx.getAccount(root)).assetV2[0].value;
 
-    //     await matrixInstance.register(root, {
-    //         from: accounts[23],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[24],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[25],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
+        var contractBalance;
+        if ((await tronWeb.trx.getAccount(matrixInstance.address)).assetV2) {
+            contractBalance = (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value
+        }
 
-    //     await matrixInstance.register(root, {
-    //         from: accounts[26],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
-    //     await matrixInstance.register(root, {
-    //         from: accounts[27],
-    //         tokenId: "1000001",
-    //         tokenValue: 5000,
-    //         shouldPollResponse: true,
-    //     })
+        await matrixInstance.register(root, {
+            from: accounts[33],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        const anotherRoot1Balance = (await tronWeb.trx.getAccount(accounts[33])).assetV2[0].value;
+        await matrixInstance.register(root, {
+            from: accounts[34],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        const anotherRoot2Balance = (await tronWeb.trx.getAccount(accounts[34])).assetV2[0].value;
+        await wait(0.5);
+        await matrixInstance.register(root, {
+            from: accounts[35],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        await wait(0.5);
+        await matrixInstance.register(root, {
+            from: accounts[36],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        await matrixInstance.register(root, {
+            from: accounts[37],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        await matrixInstance.register(root, {
+            from: accounts[38],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        await matrixInstance.register(root, {
+            from: accounts[39],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        const anotherRoot3Balance = (await tronWeb.trx.getAccount(accounts[39])).assetV2[0].value;
+        await wait(0.5);
+        await matrixInstance.register(root, {
+            from: accounts[40],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        });
+        const anotherRoot4Balance = (await tronWeb.trx.getAccount(accounts[40])).assetV2[0].value;
+        await matrixInstance.register(root, {
+            from: accounts[41],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[42],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await wait(0.5);
+        await matrixInstance.register(root, {
+            from: accounts[43],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[44],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        await matrixInstance.register(root, {
+            from: accounts[45],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot5Balance = (await tronWeb.trx.getAccount(accounts[45])).assetV2[0].value;
+        await matrixInstance.register(root, {
+            from: accounts[46],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
+        const anotherRoot6Balance = (await tronWeb.trx.getAccount(accounts[46])).assetV2[0].value;
+        await wait(0.5);
+        await matrixInstance.register(root, {
+            from: accounts[47],
+            tokenId: "1000001",
+            tokenValue: 5000,
+            shouldPollResponse: true,
+        })
 
-    //     const rootUser = await matrixInstance.getUser(root);
-    //     await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), ROOT_ADDRESS, "Check rootUser properties (referrerAddress)");
-    //     await assert.equal(rootUser.referralsCount.toNumber(), 8, "Check rootUser properties (referralsCount)");
-    //     await assert.equal(rootUser.matrixIds.length, 3, "Check rootUser properties (matrixIds)");
+        const rootUser = await matrixInstance.getUser(root);
+        await assert.equal(tronWeb.address.fromHex(rootUser.referrerAddress), accounts[31], "Check rootUser properties (referrerAddress)");
+        await assert.equal(rootUser.referralsCount.toNumber(), 15, "Check rootUser properties (referralsCount)");
+        await assert.equal(rootUser.matrixIds.length, 3, "Check rootUser properties (matrixIds)");
 
-    //     const matrixByRoot1 = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot1.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot1.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot1.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
+        const matrixByRoot1 = await matrixInstance.getMatrix(rootUser.matrixIds[0].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot1.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot1.closed, true, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot1.subtreeMatrixCount.toNumber(), 6, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot1.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot2.closed, true, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot2.childMatrixIds.length, 3, "Check matrix properties (childMatrixIds)");
+        const matrixByRoot2 = await matrixInstance.getMatrix(rootUser.matrixIds[1].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot2.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot2.closed, true, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot2.subtreeMatrixCount.toNumber(), 6, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot2.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     const matrixByRoot3 = await matrixInstance.getMatrix(rootUser.matrixIds[2].toNumber());
-    //     await assert.equal(tronWeb.address.fromHex(matrixByRoot3.userAddress), root, "Check matrix properties (userAddress)");
-    //     await assert.equal(matrixByRoot3.closed, false, "Check matrix properties (closed)");
-    //     await assert.equal(matrixByRoot3.subtreeMatrixCount.toNumber(), 2, "Check matrix properties (subtreeMatrixCount)");
-    //     await assert.equal(matrixByRoot3.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
+        const matrixByRoot3 = await matrixInstance.getMatrix(rootUser.matrixIds[2].toNumber());
+        await assert.equal(tronWeb.address.fromHex(matrixByRoot3.userAddress), root, "Check matrix properties (userAddress)");
+        await assert.equal(matrixByRoot3.closed, false, "Check matrix properties (closed)");
+        await assert.equal(matrixByRoot3.subtreeMatrixCount.toNumber(), 3, "Check matrix properties (subtreeMatrixCount)");
+        await assert.equal(matrixByRoot3.childMatrixIds.length, 2, "Check matrix properties (childMatrixIds)");
 
-    //     await assert.equal(
-    //         rootBalance + 27000,
-    //         (await tronWeb.trx.getAccount(root)).assetV2[0].value,
-    //         "Check user balance"
-    //     );
-    //     await assert.equal(
-    //         contractBalance,
-    //         (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
-    //         "Check contract balance"
-    //     );
+        await assert.equal(
+            contractBalance + 0,
+            (await tronWeb.trx.getAccount(matrixInstance.address)).assetV2[0].value,
+            "Check contract balance"
+        );
+        await assert.equal(
+            anotherRoot1Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[33])).assetV2[0].value,
+            "Check user balance"
+        );
+        
+        await assert.equal(
+            anotherRoot2Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[34])).assetV2[0].value,
+            "Check user balance"
+        );
+
+        await assert.equal(
+            anotherRoot3Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[39])).assetV2[0].value,
+            "Check user balance"
+        );
+
+        await assert.equal(
+            anotherRoot4Balance + 4000,
+            (await tronWeb.trx.getAccount(accounts[40])).assetV2[0].value,
+            "Check user balance"
+        );
+
+        await assert.equal(
+            anotherRoot5Balance + 2000,
+            (await tronWeb.trx.getAccount(accounts[45])).assetV2[0].value,
+            "Check user balance"
+        );
+
+        await assert.equal(
+            anotherRoot6Balance + 0,
+            (await tronWeb.trx.getAccount(accounts[46])).assetV2[0].value,
+            "Check user balance"
+        );
+
+        await assert.equal(
+            rootBalance + 24500,
+            (await tronWeb.trx.getAccount(root)).assetV2[0].value,
+            "Check user balance"
+        );
     
-    // });
+    });
 
 })
