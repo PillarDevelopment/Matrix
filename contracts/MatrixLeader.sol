@@ -7,7 +7,6 @@ import "./interfaces/IPriceController.sol";
 contract MatrixLeader is MatrixOwnable{
     using SafeMath for uint256;
 
-    address payable[] public leaders;
     uint256[] public parts;
 
     IPriceController public controller;
@@ -34,32 +33,14 @@ contract MatrixLeader is MatrixOwnable{
     }
 
 
-    function transferRewards() payable public onlyOwner {
+    function transferRewards(address payable[10] memory _pool) payable public onlyOwner {
         require(block.timestamp >= previousDate.add(timeLimit));
         uint256 _currentBalance = address(this).tokenBalance(controller.getTokenID());
 
-        for (uint256 i = 0; i < leaders.length; i++) {
-            leaders[i].transferToken(_currentBalance.mul(parts[i].div(100)), controller.getTokenID());
+        for (uint256 i = 0; i < _pool.length; i++) {
+            _pool[i].transferToken(_currentBalance.mul(parts[i].div(100)), controller.getTokenID());
         }
         previousDate = block.timestamp;
-    }
-
-
-    // метод записи пула лидеров
-    function setLeaderPool(address payable[10] memory _pool) public onlyOwner {
-        for(uint256 i = 0; i < 10; i++) {
-            leaders.push(_pool[i]);
-        }
-    }
-
-
-    function getLeader(uint256 id) public view returns(address) {
-        return leaders[id];
-    }
-
-
-    function setLeader(address payable _leader, uint256 id) public onlyOwner {
-        leaders[id] = _leader;
     }
 
 
