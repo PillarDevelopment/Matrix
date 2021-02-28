@@ -22,15 +22,12 @@ contract MatrixTwo is MatrixCore, MatrixLeaderPool {
     // Constructor
     //
 
-    constructor(address payable _rootUser, address _priceController)
-        public
-        MatrixCore(_rootUser, _priceController)
-    {
-        address payable initialLeaderWallet =
-            address(uint160(address(owner())));
-        for (uint256 i = 0; i < 10; i++) {
-            leaderPool[i] = initialLeaderWallet;
-        }
+    constructor(
+        address payable _rootUser,
+        address _priceController,
+        address payable _leaderPool
+    ) public MatrixCore(_rootUser, _priceController) {
+        leaderPool = _leaderPool;
     }
 
     //
