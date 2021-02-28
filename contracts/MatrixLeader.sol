@@ -13,7 +13,7 @@ contract MatrixLeader is MatrixOwnable{
     uint256 public previousDate;
     uint256 public timeLimit;
 
-    constructor(IPriceController _controller, uint256 _previousDate) public {
+    constructor(IPriceController _controller, uint256 _previousDate) payable public {
         controller = _controller;
         previousDate = _previousDate;
         timeLimit = 7 days;
@@ -28,6 +28,9 @@ contract MatrixLeader is MatrixOwnable{
         parts.push(5);
         parts.push(5);
     }
+
+
+    function() payable external {}
 
 
     function setTimeLimit(uint256 newTimeLimit) public onlyOwner {
