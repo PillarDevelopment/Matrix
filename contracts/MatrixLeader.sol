@@ -13,8 +13,10 @@ contract MatrixLeader is MatrixOwnable{
     uint256 public previousDate;
     uint256 public timeLimit;
 
-    constructor(IPriceController _controller) public {
+    constructor(IPriceController _controller, uint256 _previousDate) public {
         controller = _controller;
+        previousDate = _previousDate;
+        timeLimit = 7 days;
         parts.push(30);
         parts.push(20);
         parts.push(10);
@@ -33,7 +35,7 @@ contract MatrixLeader is MatrixOwnable{
     }
 
 
-    function transferRewards(address payable[10] memory _pool) payable public onlyOwner {
+    function transferRewards(address payable[] memory _pool) payable public onlyOwner {
         require(block.timestamp >= previousDate.add(timeLimit));
         uint256 _currentBalance = address(this).tokenBalance(controller.getTokenID());
 
@@ -46,6 +48,12 @@ contract MatrixLeader is MatrixOwnable{
 
     function setPriceController(IPriceController _newController) public onlyOwner{
         controller = _newController;
+    }
+
+
+    function emergencyWithdraw(address payable custody) payable public onlyOwner {
+        uint256 _currentBalance = address(this).tokenBalance(controller.getTokenID());
+        custody.transferToken(_currentBalance, controller.getTokenID());
     }
 
 }
