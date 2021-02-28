@@ -212,10 +212,7 @@ contract MatrixCore is IMatrix, MatrixOwnable {
     // Private methods
     //
 
-    function _changeEntryCost(uint256 _newCost)
-        private
-        returns (uint256)
-    {
+    function _changeEntryCost(uint256 _newCost) private returns (uint256) {
         uint256 oldCost = matrixEntryCost;
         matrixEntryCost = _newCost;
 
