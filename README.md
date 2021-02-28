@@ -4,7 +4,7 @@ Implementation of the mlm-system "Matrix"
 
 - Lang: Solidity v0.5.12
 
-- Project framework: truffle ^5.1.44
+- Project framework: tronbox v2.7.17
 
 ## Project structure:
 ```
