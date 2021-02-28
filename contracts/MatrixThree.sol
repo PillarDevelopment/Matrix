@@ -63,11 +63,11 @@ contract MatrixThree is MatrixCore, MatrixLeaderPool {
     function _makeRewards(uint256 _parentMatrixId) internal {
         uint256[3] memory uplineRewards =
             [
-                msg.value.mul(1).div(10),
-                msg.value.mul(3).div(10),
-                msg.value.mul(5).div(10)
+                msg.tokenvalue.mul(1).div(10),
+                msg.tokenvalue.mul(3).div(10),
+                msg.tokenvalue.mul(5).div(10)
             ];
-        uint256 leaderPoolReward = msg.value.mul(1).div(10);
+        uint256 leaderPoolReward = msg.tokenvalue.mul(1).div(10);
 
         // reward parent matrices
         uint256 uplineMatrixId = _parentMatrixId;
@@ -93,7 +93,7 @@ contract MatrixThree is MatrixCore, MatrixLeaderPool {
         // reward leader pool
         _rewardLeaders(leaderPoolReward);
 
-        emit Rewards(_parentMatrixId, msg.value, block.timestamp);
+        emit Rewards(_parentMatrixId, msg.tokenvalue, block.timestamp);
     }
 
     function _getParentMatrixId(uint256 _localRootMatrix)
