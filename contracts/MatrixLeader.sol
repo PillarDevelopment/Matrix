@@ -35,7 +35,7 @@ contract MatrixLeader is MatrixOwnable{
     }
 
 
-    function transferRewards(address payable[] memory _pool) payable public onlyOwner {
+    function transferRewards(address payable[10] memory _pool) payable public onlyOwner {
         require(block.timestamp >= previousDate.add(timeLimit));
         uint256 _currentBalance = address(this).tokenBalance(controller.getTokenID());
 
