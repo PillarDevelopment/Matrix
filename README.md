@@ -1,4 +1,12 @@
 # Matrix contracts
+Mainnet
+[PriceController](https://tronscan.io/#/contract/TS25NLQHdXnR2DvgfZXpM1ees7SwExU1yw/code)
+[MatrixLeader](https://tronscan.io/#/contract/TUJAHqewqN5cJUapZXiKwD2iNpjjE6CUWx/code)
+[MatrixOne](https://tronscan.io/#/contract/TLranSKiYiWsT9NdM1ywCQVMaagL5tpEp1/code)
+[MatrixTwo](https://tronscan.io/#/contract/TMSa3gyq6UhYaBV6ocNjw5h1NXkbwDWqSn/code)
+[MatrixThree](https://tronscan.io/#/contract/TLcpxSgnde2hPuJSFanjEnXpfeW9tVYdAN/code)
+[MatrixFour](https://tronscan.io/#/contract/TLBa7ZV4CndwZMY187CAsszuGm6g35DtH3/code)
+
 
 Implementation of the mlm-system "Matrix"
 
