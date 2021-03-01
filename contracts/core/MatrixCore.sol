@@ -113,6 +113,15 @@ contract MatrixCore is IMatrix, MatrixOwnable {
         return _changeEntryCost(_newCost);
     }
 
+    function setPriceController(address _newController)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        priceController = IPriceController(_newController);
+        return true;
+    }
+
     function withdrawTrx(uint256 _amount)
         external
         onlyOwner
@@ -203,11 +212,7 @@ contract MatrixCore is IMatrix, MatrixOwnable {
     // Private methods
     //
 
-    function _changeEntryCost(uint256 _newCost)
-        private
-        onlyOwner
-        returns (uint256)
-    {
+    function _changeEntryCost(uint256 _newCost) private returns (uint256) {
         uint256 oldCost = matrixEntryCost;
         matrixEntryCost = _newCost;
 

@@ -24,7 +24,9 @@ contract MatrixFour is MatrixCore {
     constructor(address payable _rootUser, address _priceController)
         public
         MatrixCore(_rootUser, _priceController)
-    {}
+    {
+        matrixEntryCost = 100;
+    }
 
     //
     // Private methods
