@@ -7,8 +7,6 @@ import "./interfaces/IPriceController.sol";
 contract MatrixLeader is MatrixOwnable {
     using SafeMath for uint256;
 
-    uint256[10] public parts = [30, 20, 10, 10, 5, 5, 5, 5, 5, 5];
-
     IPriceController public controller;
     uint256 public previousDate;
     uint256 public timeLimit;

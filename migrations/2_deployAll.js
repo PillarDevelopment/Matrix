@@ -41,7 +41,7 @@ module.exports = function(deployer, network, account) {
             await deployer.deploy(PriceController, 1000495);
             var priceControllerInst = await PriceController.deployed();
             await wait();
-            await deployer.deploy(MatrixLeader, priceControllerInst.address);
+            await deployer.deploy(MatrixLeader, priceControllerInst.address, 0);
             var matrixLeaderInst = await MatrixLeader.deployed();
             await wait();
             await deployer.deploy(MatrixOne, ROOT_ADDRESS, priceControllerInst.address, matrixLeaderInst.address);
