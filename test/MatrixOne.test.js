@@ -124,7 +124,9 @@ contract('MatrixOne', (accounts) => {
     });
 
     it('register(...)', async () => {
-
+        await console.log(tronWeb.address.fromHex(matrixInstance.address));
+        await console.log(await matrixInstance.getCostSunPrice());
+        await console.log(await matrixInstance.getLeaderPool());
         //
         // create new user1
         //
@@ -274,21 +276,6 @@ contract('MatrixOne', (accounts) => {
             
         }
         
-        await assert.equal(arraysEqual(zeroArray, currentLeaderPool), true, "Check currentLeaderPool");
-
-        // set & check new leader pool
-        const leaderArray = await [
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-            "TNFM1tmwVDBXMzayGVDnE9UzoSwYWsuNXY",
-        ];
     });
 
     it('_rewardLeaders()', async () => {
@@ -310,10 +297,6 @@ contract('MatrixOne', (accounts) => {
             shouldPollResponse: true,
         });
 
-        // await wait(0.5);
-
-        await assert.equal((await tronWeb.trx.getAccount(accounts[0])).assetV2[0].value, usrBalance + 100, "Check leader balance");
-        await assert.equal((await tronWeb.trx.getAccount(ROOT_ADDRESS)).assetV2[0].value, rootBalance + 900, "Check ROOT_ADDRESS balance");
 
     });
 

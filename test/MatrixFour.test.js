@@ -124,6 +124,7 @@ contract('MatrixFour', (accounts) => {
     });
 
     it('register(...)', async () => {
+        await matrixInstance.changeEntryCost(50, { from: accounts[0] });
         await priceController.updateUsdRate(1);
         // await matrixInstance.changeEntryCost(50, {from: accounts[0]});
 
